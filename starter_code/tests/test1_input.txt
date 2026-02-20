@@ -1,0 +1,9 @@
+seed 222
+make PowerCell 10
+make MaintenanceBot 5
+make InvalidThing
+make powercell
+step
+stats PowerCell
+stats MaintenanceBot
+quit

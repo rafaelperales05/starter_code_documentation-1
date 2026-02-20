@@ -1,0 +1,4 @@
+seed 111
+make PowerCell 3
+show
+quit

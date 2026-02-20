@@ -1,0 +1,9 @@
+seed 444
+make Commander 5
+make Engineer 5
+make PowerCell 20
+step 50
+stats Commander
+stats Engineer
+stats PowerCell
+quit

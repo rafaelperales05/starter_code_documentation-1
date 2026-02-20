@@ -1,0 +1,12 @@
+space_station> error processing: make
+space_station> error processing: make PowerCell -5
+space_station> error processing: make PowerCell 0
+space_station> error processing: make PowerCell abc
+space_station> error processing: step -1
+space_station> error processing: step abc
+space_station> error processing: seed
+space_station> error processing: seed abc
+space_station> error processing: stats
+space_station> error processing: stats NonExistent
+space_station> error processing: show extra_arg
+space_station> space_station> 

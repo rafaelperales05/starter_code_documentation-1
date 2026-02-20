@@ -1,0 +1,3 @@
+space_station> space_station> space_station> space_station> space_station> 3 total MaintenanceBots    12.5% straight   12.5% back   37.5% right   37.5% left   
+space_station> 315 entities as follows -- *:315
+space_station> 

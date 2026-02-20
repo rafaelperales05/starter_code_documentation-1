@@ -1,0 +1,7 @@
+seed 333
+make MaintenanceBot 20
+make PowerCell 50
+step 100
+stats MaintenanceBot
+stats PowerCell
+quit

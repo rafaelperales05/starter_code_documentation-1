@@ -1,0 +1,4 @@
+space_station> space_station> space_station> space_station> space_station> space_station> 0 total Commanders    Status: Leading the station efficiently
+space_station> 1 total Engineers    Average energy: 50    Low energy: 0    Status: Maintaining station systems
+space_station> 160 entities as follows -- *:160
+space_station> 

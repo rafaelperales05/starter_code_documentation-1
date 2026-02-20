@@ -1,0 +1,13 @@
+make
+make PowerCell -5
+make PowerCell 0
+make PowerCell abc
+step -1
+step abc
+seed
+seed abc
+stats
+stats NonExistent
+show extra_arg
+
+quit

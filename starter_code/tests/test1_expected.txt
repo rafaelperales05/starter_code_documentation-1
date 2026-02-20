@@ -1,0 +1,5 @@
+space_station> space_station> space_station> space_station> error processing: make InvalidThing
+space_station> error processing: make powercell
+space_station> space_station> 13 entities as follows -- *:13
+space_station> 5 total MaintenanceBots    12.5% straight   12.5% back   37.5% right   37.5% left   
+space_station> 
