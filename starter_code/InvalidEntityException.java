@@ -5,7 +5,7 @@
  *       Think about whether this is a checked or unchecked exception.
  */
 
-	public class InvalidEntityException extends Exception  { 
+	public class InvalidEntityException extends RuntimeException  { 
 
 			public InvalidEntityException(String className) { 
 				super("Invalid entity" + className);

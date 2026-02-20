@@ -12,6 +12,17 @@
  */
 public class Commander extends Entity {
 
-    // TODO: Implement this class
+    // TODO: Implement this class 
+    @Override 
+    public void doTimeStep(){};  
+    @Override
+    public String toString() {
+        return "";
+    }
+
+    @Override
+    public boolean fight(String opp) {
+        return false;
+    }
 
 }

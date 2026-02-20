@@ -44,6 +44,18 @@ public class MaintenanceBot extends Entity {
     //   - Total number of bots
     //   - Percentage of gene weight allocated to straight, right, back, left
     //     (straight = genes[0], right = genes[1]+[2]+[3],
-    //      back = genes[4], left = genes[5]+[6]+[7])
+    //      back = genes[4], left = genes[5]+[6]+[7]) 
+
+    @Override 
+    public void doTimeStep(){};  
+    @Override
+    public String toString() {
+        return "";
+    }
+
+    @Override
+    public boolean fight(String opp) {
+        return false;
+    }
 
 }

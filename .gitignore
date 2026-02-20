@@ -1,0 +1,13 @@
+# Ignore compiled Java classes
+*.class
+**/*.class
+
+# Ignore test source and test artifacts
+*Test.java
+**/*Test.java
+/tests/
+/Test_files/
+
+# Optional: ignore downloaded jars and IDE settings
+lib/
+.vscode/

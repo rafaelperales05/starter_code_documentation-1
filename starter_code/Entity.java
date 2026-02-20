@@ -135,7 +135,6 @@ public abstract class Entity {
      * ======================================================================== */
 
     public abstract void doTimeStep();  
-
     @Override
     public abstract String toString(); 
 
@@ -163,15 +162,13 @@ public abstract class Entity {
      * @param Name 
     */  
     public static void makeEntity(String className) {
-        
-
+             // (1) check null/empty/lowercase 
+        if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))){ 
+                throw new InvalidEntityException(className);  
+        }     
         try {  
 
-             // (1) check null/empty/lowercase 
-            if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))){ 
-                throw new InvalidEntityException(className);  
-            }
-            // (2) find class  
+            // (2) find class 
             Class<?> genClass = Class.forName(className);  
 
             // (3) instiate and set energy/random position
@@ -185,14 +182,47 @@ public abstract class Entity {
             addToWorld(genEntity); 
 
         } 
-        catch (InvalidEntityException e){ 
-            throw new InvalidEntityException(e);
+        catch ( ReflectiveOperationException e) { 
+            throw new InvalidEntityException(className); 
+        } 
+        catch (ClassCastException e){ 
+            throw new InvalidEntityException(className); 
+        } 
+        catch (Exception e) { 
+            throw new InvalidEntityException(className);  
         }
     }
 
 
 
-    // TODO: Implement getInstances
+    // TODO: Implement getInstances 
+    public static List<Entity> getInstances(String className) {   
+
+        // check null/empty/lowercase 
+        if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))){ 
+                throw new InvalidEntityException(className);  
+        }       
+
+        try { 
+            List<String> instances = new ArrayList<>();  
+
+            for (Entity entity: population){ 
+                Class<?> genClass = entity.getClass(); 
+                String name = genClass.getSimpleName(); 
+                if (name == className){ 
+                    instances.add(entity); 
+                }
+            } 
+            for (Entity baby: babies){ 
+
+            }
+
+            
+        } catch (Exception e) {
+        }}
+
+
+    }
 
     /* ========================================================================
      * Statistics

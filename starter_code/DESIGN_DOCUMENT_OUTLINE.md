@@ -62,9 +62,9 @@ _Fill in the table below describing what ecological role each entity type plays 
 | Entity | Role | Energy Strategy | Reproduction Threshold | Fight Behavior |
 |--------|------|-----------------|----------------------|----------------|
 | PowerCell | Energy producer | Solar charging (+1/step) | N/A | Never fights |
-| MaintenanceBot | | | | |
-| Commander | | | | |
-| Engineer | | | | |
+| MaintenanceBot | | | |Always Fight |
+| Commander | | | | Always Fight |
+| Engineer | | | | Never Fight |
 
 ### 4.2 Balance and Tuning
 
