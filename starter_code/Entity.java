@@ -161,7 +161,7 @@ public abstract class Entity {
      *makeEntity creates a new entity of the given class name using reflection.
      * @param Name 
     */  
-    public static void makeEntity(String className) {
+    public static void makeEntity(String className) throws InvalidEntityException {
              // (1) check null/empty/lowercase 
         if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))){ 
                 throw new InvalidEntityException(className);  
@@ -196,7 +196,7 @@ public abstract class Entity {
 
 
     // TODO: Implement getInstances 
-    public static List<Entity> getInstances(String className) {   
+    public static List<Entity> getInstances(String className) throws InvalidEntityException {   
 
         // check null/empty/lowercase 
         if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))){ 
@@ -204,25 +204,33 @@ public abstract class Entity {
         }       
 
         try { 
-            List<String> instances = new ArrayList<>();  
+            List<Entity> instances = new ArrayList<>();  
+            Class<?> genClass = Class.forName(className);  
 
+            // error check for invalid type
+            if (!Entity.class.isAssignableFrom(genClass)){ 
+                throw new InvalidEntityException(className); 
+            } 
+
+            // check for population
             for (Entity entity: population){ 
-                Class<?> genClass = entity.getClass(); 
-                String name = genClass.getSimpleName(); 
-                if (name == className){ 
+
+                if (genClass.isInstance(entity)){ 
                     instances.add(entity); 
                 }
             } 
-            for (Entity baby: babies){ 
-
-            }
-
+            return instances;
             
-        } catch (Exception e) {
-        }}
-
-
+        } 
+        catch (ReflectiveOperationException e) {
+            throw new InvalidEntityException(className); 
+        } 
+        catch (Exception e){ 
+            throw new InvalidEntityException(className); 
+        }
     }
+
+
 
     /* ========================================================================
      * Statistics
