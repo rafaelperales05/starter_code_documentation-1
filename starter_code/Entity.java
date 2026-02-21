@@ -127,6 +127,47 @@ public abstract class Entity {
 
     // TODO: Implement the reproduce method 
 
+    /**  
+     * Reproduce takes in a parent entity and creates a baby/offspring entity 
+     * it divides its energy with the baby and it is placed adjacent to the parent depending 
+     * on input direction.
+     * @param Parent - Parent entity that creates the offspring
+     * @param Direction - The direciton indicates in which block the child will move to be adjacent
+     *  
+     */  
+    public static void reproduce(Entity parent, int direction){   
+        
+        //null check and check for minumum energy 
+        if (parent == null || parent.getEnergy() < Params.min_reproduce_energy){ 
+            return ;
+        } 
+
+        try {
+
+        String parentClass = parent.getClass().getSimpleName(); 
+        Class<?> genClass = Class.forName(parentClass);
+        Entity child = (Entity) genClass.getDeclaredConstructor().newInstance();
+
+        //set energy 
+        int parentEnergy = parent.getEnergy();  
+        child.setEnergy((int) Math.floor(parentEnergy/2));  
+        parent.setEnergy((int) Math.ceil(parentEnergy/2)); 
+
+        // set offspring coordinates
+        child.x_coord = parent.x_coord; 
+        child.y_coord = parent.y_coord;  
+        move(child,direction,1);
+            
+        // add to babies  
+        babies.add(child);  
+
+            
+        } catch (Exception e) { 
+            e.printStackTrace();
+        }
+    }
+    
+
     /* ========================================================================
      * Abstract methods
      * 
@@ -158,7 +199,9 @@ public abstract class Entity {
 
 
     /** 
-     *makeEntity creates a new entity of the given class name using reflection.
+     * MakeEntity creates a new entity of the given class name using reflection. 
+     * It rejects null or invalid names, initializes the energy/poistions, and adds 
+     * it to the population and world grid
      * @param Name 
     */  
     public static void makeEntity(String className) throws InvalidEntityException {
@@ -195,7 +238,11 @@ public abstract class Entity {
 
 
 
-    // TODO: Implement getInstances 
+    /**
+    * The getinstances class retrieves all the instances/entites of a give type in the population
+    * @Param className - string variable of instances requested 
+    * @return instances - Array holding all entitys of same class
+    * */
     public static List<Entity> getInstances(String className) throws InvalidEntityException {   
 
         // check null/empty/lowercase 
