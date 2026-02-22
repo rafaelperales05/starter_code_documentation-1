@@ -44,7 +44,6 @@ public class Main {
 
             switch (command[0]) {
 
-                // TODO: Implement the remaining commands:
                 //   show                  - Display the world grid
                 //   make Type [count]     - Create one or more entities
                 //   step [count]          - Advance simulation by one or more steps
@@ -53,7 +52,26 @@ public class Main {
                 //
                 // Invalid commands should print: "invalid command: <the input>"
                 // Commands with bad arguments should print: "error processing: <the input>"
+                case "show": 
+                    Entity.displayWorld();
+                    break;
 
+                case "make":  
+                    makeType(command);
+                    break;
+                
+                case "step": 
+                    advanceTime(command);
+                    break;
+
+                case "seed": 
+                    setSeed(command);
+                    break;
+
+                case "stats": 
+                    runTypeStats(command);
+                    break;
+                
                 case "quit":
                     break;
 
@@ -76,7 +94,133 @@ public class Main {
 
         /* Write your code above */
         System.out.flush();
+    }  
+    private static void runTypeStats(String[] command) { 
+         try {
+            if (command.length < 2 || command.length > 2) {
+                System.out.println("error processing: " + errorToString(command));
+                return;
+            }
+            String entityType = command[1];
+        
+            // temporary instance to call  runStats
+            Class<?> entityClass = Class.forName(entityType);
+            Entity tempEntity = (Entity) entityClass.getDeclaredConstructor().newInstance();
+            tempEntity.runStats(entityType);
+        
+        } catch (InvalidEntityException e) {
+            System.out.println("error processing: " + errorToString(command));
+        } catch (Exception e) {
+            System.out.println("error processing: " + errorToString(command));
+        }
+
+    } 
+
+    /**
+     * Sets random seed and error checks seed
+     * @param command
+     */
+    private static void setSeed(String[] command) {
+        try {
+            if (command.length < 2 || command.length > 2) {
+                System.out.println("error processing: " + errorToString(command));
+                return;
+            }
+            // Allow negative numbers for seed
+            String seedStr = command[1];
+            if (seedStr.startsWith("-")) {
+                seedStr = seedStr.substring(1);
+            }
+            for (char ch : seedStr.toCharArray()) {
+                if (!Character.isDigit(ch)) {
+                    System.out.println("error processing: " + errorToString(command));
+                    return;
+                }   
+            }    
+            long seed = Long.parseLong(command[1]);  
+            Entity.setSeed(seed); 
+        } 
+        catch (Exception e) { 
+            System.out.println("error processing: " + errorToString(command));
+        }
+ 
     }
+    /**
+     * Creates n amount of the given entity type 
+     * @param command - contains "make", entity type, and optional count
+     */
+
+    private static void makeType(String[] command) {
+        try {
+            if (command.length < 2 || command.length > 3) {
+                System.out.println("error processing: " + errorToString(command));
+                return;
+            }
+            
+            String entityType = command[1];
+            int count = 1; // default to 1 if not specified
+            
+            if (command.length == 3) {
+                for (char ch : command[2].toCharArray()) {
+                    if (!Character.isDigit(ch)) {
+                        System.out.println("error processing: " + errorToString(command));
+                        return;
+                    }   
+                }
+                count = Integer.parseInt(command[2]);
+                if (count <= 0) {
+                    System.out.println("error processing: " + errorToString(command));
+                    return;
+                }
+            }
+            
+            for (int i = 0; i < count; i++){ 
+                Entity.makeEntity(entityType); 
+            } 
+        } 
+        catch (InvalidEntityException e) {
+            System.out.println("error processing: " + errorToString(command));
+        }
+        catch (Exception e) { 
+            System.out.println("error processing: " + errorToString(command));
+        }
+    } 
+
+    /**
+     * Advances simulation by n amount of steps. Checks for valid number and ensures it is a positive number.
+     * @param command - contains optional amount of steps to advance (defaults to 1)
+     */
+    private static void advanceTime(String[] command){ 
+        try {
+            if (command.length > 2) {
+                System.out.println("error processing: " + errorToString(command));
+                return;
+            }
+            
+            int count = 1; // default to 1 if not specified
+            
+            if (command.length == 2) {
+                for (char ch : command[1].toCharArray()) {
+                    if (!Character.isDigit(ch)) {
+                        System.out.println("error processing: " + errorToString(command));
+                        return;
+                    }   
+                }    
+                count = Integer.parseInt(command[1]);   
+                if (count <= 0){ 
+                    System.out.println("error processing: " + errorToString(command));
+                    return;
+                }
+            }
+            
+            for (int i = 0; i < count; i++){ 
+                Entity.worldTimeStep(); 
+            } 
+        } catch (Exception e) {
+            System.out.println("error processing: " + errorToString(command));
+        }
+    }
+
 
     /**
      * Prints a high-level overview of the simulation

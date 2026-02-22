@@ -8,6 +8,10 @@
 /tests/
 /Test_files/
 
+# Ignore text files (test outputs, etc.)
+*.txt
+**/*.txt
+
 # Optional: ignore downloaded jars and IDE settings
 lib/
 .vscode/

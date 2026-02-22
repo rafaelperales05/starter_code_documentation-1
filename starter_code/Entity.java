@@ -207,7 +207,7 @@ public abstract class Entity {
      * it to the population and world grid
      * @param Name 
     */  
-    private static void makeEntity(String className) throws InvalidEntityException {
+    public static void makeEntity(String className) throws InvalidEntityException {
              // (1) check null/empty/lowercase 
         if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))){ 
                 throw new InvalidEntityException(className);  
@@ -310,7 +310,7 @@ public abstract class Entity {
                 throw new InvalidEntityException(className); 
             } 
             List<Entity> instances = getInstances(className); 
-            System.out.println("Count: " +instances.size());
+            System.out.println(instances.size() + " total " + className + "    ");
         } 
         catch (ReflectiveOperationException e) {
             throw new InvalidEntityException(className); 
@@ -419,11 +419,11 @@ public abstract class Entity {
      */
 
     // Implement worldTimeStep and any helper methods it needs  
+
     /** 
      * Advances the simulation by one time step. 
      */
-
-    protected static void worldTimeStep() { 
+    public static void worldTimeStep() { 
         try {
             // 1. Each existing entity performs its action for this step
             runTimesteps(); 

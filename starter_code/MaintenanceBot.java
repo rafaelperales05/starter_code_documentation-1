@@ -152,6 +152,7 @@ public class MaintenanceBot extends Entity {
 
     }  
 
+    // TODO- edge case 0 bots
     /**
      * getDistribution sums up the genes from all active bots and then prints 
      * the distribution.  
@@ -194,11 +195,10 @@ public class MaintenanceBot extends Entity {
         double backPercent = (geneSum[BACK] * 100.0) / totalSum;
         double leftPercent = (geneSum[LEFT] * 100.0) / totalSum;
         
-        System.out.println("Gene Distribution:");
-        System.out.println("Straight: " + straightPercent + "%");
-        System.out.println("Right: " + rightPercent + "%");
-        System.out.println("Back: " + backPercent + "%");
-        System.out.println("Left: " + leftPercent + "%");
+        System.out.println( straightPercent + "%" +  " straight   ");
+        System.out.println(backPercent + "%" +  " back   ");
+        System.out.println(rightPercent + "%" +  " right   ");
+        System.out.println(leftPercent + "%" +  " left   ");
     }
 
 
