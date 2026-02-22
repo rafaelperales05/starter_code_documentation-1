@@ -11,14 +11,27 @@
  */
 public class PowerCell extends Entity {
 
-    // TODO: Implement this class
+    
+     
+    /** 
+     * PowerCell's doTimestep increases the energy that can be consumed by 1
+     */
     @Override 
-    public void doTimeStep(){};  
+    public void doTimeStep(){ 
+        this.setEnergy(this.getEnergy() + Params.solar_energy_amount); 
+    };   
+
+    /** 
+     * PowerCell's toString returns its display Character '*'
+     */
     @Override
     public String toString() {
-        return "";
+        return "*";
     }
 
+    /** 
+     * PowerCell's fight method returns false, as it is always consumed upon conflict
+     */
     @Override
     public boolean fight(String opp) {
         return false;
