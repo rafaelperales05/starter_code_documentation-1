@@ -125,8 +125,6 @@ public abstract class Entity {
      * The parent keeps ceil(energy/2) and the offspring gets floor(energy/2).
      * ======================================================================== */
 
-    // TODO: Implement the reproduce method 
-
     /**  
      * Reproduce takes in a parent entity and creates a baby/offspring entity 
      * it divides its energy with the baby and it is placed adjacent to the parent depending 
@@ -288,7 +286,35 @@ public abstract class Entity {
      * with more detailed information.
      * ======================================================================== */
 
-    // TODO: Implement runStats
+    /** 
+     * runStats prints a summary of the given entity list, this defualt version 
+     * counts how many of each display character exist. 
+     * @param className - string variable of instances requested
+     * 
+     */
+        public static void runStats(String className) throws InvalidEntityException { 
+        
+        if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))){ 
+                throw new InvalidEntityException(className);  
+        }       
+        try { 
+            Class<?> genClass = Class.forName(className);  
+
+            // error check for invalid type
+            if (!Entity.class.isAssignableFrom(genClass)){ 
+                throw new InvalidEntityException(className); 
+            } 
+            List<Entity> instances = getInstances(className); 
+            System.out.println("Count: " +instances.size());
+        } 
+        catch (ReflectiveOperationException e) {
+            throw new InvalidEntityException(className); 
+        } 
+        catch (Exception e){ 
+            throw new InvalidEntityException(className); 
+        }
+
+    }
 
     /* ========================================================================
      * World grid helpers — DO NOT MODIFY
@@ -393,8 +419,113 @@ public abstract class Entity {
      */
 
     public static void worldTimeStep() { 
+        try {
+            // 1. Each existing entity performs its action for this step
+            runTimesteps(); 
 
+            // 2. Resolve encounters — when multiple entities share a location 
+            // TODO
+            solveEncounters(); 
+
+            // 3. Deduct rest energy cost and remove dead entities (energy <= 0)
+            removeDeadEntities(); 
+
+            // 4. Add any offspring born this step to the world
+            addOffspring();  
+
+            //  5. Reset movement tracking for the next step  
+            resetMovement();
+
+            // 6. Spawn powercells 
+            spawnPowerCells(); 
+            
+ 
+        }
+         catch (Exception e) {
+        }
+    }  
+
+    // TODO
+    private static void solveEncounters(){  
+
+        try {   
+            for (List<Entity> location : world){ 
+
+            }
+        } 
+        catch(Exception e) { 
+            e.printStackTrace();
+        }
     }
+
+
+    private static void runTimesteps(){ 
+        try {  
+            // (1) all existing do specfic timestpe
+            for(Entity entity: population){ 
+                entity.doTimeStep(); 
+            }
+
+        } 
+        catch (Exception e) {  
+            e.printStackTrace();
+        }
+    }
+    private static void removeDeadEntities() { 
+
+        try { 
+            // (3) deduct rest energy cost 
+            for (Entity entity : population) {  
+                entity.setEnergy(entity.getEnergy() - Params.rest_energy_cost); 
+                if (entity.getEnergy() <= 0){ 
+                    population.remove(entity); 
+                    removeFromWorld(entity); 
+                }
+            } 
+            
+        } catch (Exception e) { 
+            e.printStackTrace();
+        }
+    }
+
+    private static void addOffspring(){  
+        try {   
+            // (4) add offspring  
+            for (Entity entity : babies){ 
+                population.add(entity); 
+                addToWorld(entity); 
+                babies.remove(entity);
+            }
+        } 
+        catch (Exception e) { 
+            e.printStackTrace();
+        }
+    } 
+    private static void resetMovement(){ 
+        try {  
+            for (List<Boolean> walked : hasWalked){ 
+                for (int i = 0; i < walked.size(); i++){ 
+                    walked.set(i,false); 
+                }
+            }
+        } 
+        catch (Exception e) { 
+            e.printStackTrace();
+        }
+    } 
+    private static void spawnPowerCells(){    
+        try { 
+            for (int i = 0; i < Params.refresh_powercell_count; i++){ 
+                makeEntity("PowerCell"); 
+
+            }
+        } catch (Exception e) {
+        }
+    } 
+
+
+    
+    
 
     /* ========================================================================
      * Display — DO NOT MODIFY
