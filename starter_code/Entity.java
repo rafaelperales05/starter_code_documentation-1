@@ -1,3 +1,4 @@
+import java.net.ProtocolException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -133,11 +134,11 @@ public abstract class Entity {
      * @param Direction - The direciton indicates in which block the child will move to be adjacent
      *  
      */  
-    public static void reproduce(Entity parent, int direction){   
+    protected static Entity reproduce(Entity parent, int direction){   
         
         //null check and check for minumum energy 
         if (parent == null || parent.getEnergy() < Params.min_reproduce_energy){ 
-            return ;
+            return null;
         } 
 
         try {
@@ -155,13 +156,16 @@ public abstract class Entity {
         child.x_coord = parent.x_coord; 
         child.y_coord = parent.y_coord;  
         move(child,direction,1);
+
             
         // add to babies  
         babies.add(child);  
+        return child; 
 
             
         } catch (Exception e) { 
             e.printStackTrace();
+            return null;
         }
     }
     
@@ -173,11 +177,12 @@ public abstract class Entity {
      * must be implemented by each subclass.
      * ======================================================================== */
 
-    public abstract void doTimeStep();  
-    @Override
-    public abstract String toString(); 
 
-    public abstract boolean fight(String Opp);
+    protected  abstract void doTimeStep();  
+    @Override
+    public  abstract String toString(); 
+
+    protected  abstract boolean fight(String Opp);
 
 
     /* ========================================================================
@@ -202,7 +207,7 @@ public abstract class Entity {
      * it to the population and world grid
      * @param Name 
     */  
-    public static void makeEntity(String className) throws InvalidEntityException {
+    private static void makeEntity(String className) throws InvalidEntityException {
              // (1) check null/empty/lowercase 
         if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))){ 
                 throw new InvalidEntityException(className);  
@@ -241,7 +246,7 @@ public abstract class Entity {
     * @Param className - string variable of instances requested 
     * @return instances - Array holding all entitys of same class
     * */
-    public static List<Entity> getInstances(String className) throws InvalidEntityException {   
+    protected static List<Entity> getInstances(String className) throws InvalidEntityException {   
 
         // check null/empty/lowercase 
         if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))){ 
@@ -292,7 +297,7 @@ public abstract class Entity {
      * @param className - string variable of instances requested
      * 
      */
-        public static void runStats(String className) throws InvalidEntityException { 
+    public void runStats(String className) throws InvalidEntityException { 
         
         if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))){ 
                 throw new InvalidEntityException(className);  
@@ -418,7 +423,7 @@ public abstract class Entity {
      * Advances the simulation by one time step. 
      */
 
-    public static void worldTimeStep() { 
+    protected static void worldTimeStep() { 
         try {
             // 1. Each existing entity performs its action for this step
             runTimesteps(); 
