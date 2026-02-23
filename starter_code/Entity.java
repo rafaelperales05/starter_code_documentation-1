@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 
 public abstract class Entity {
     private static List<Entity> population = new java.util.ArrayList<Entity>();
-    protected static List<Entity> babies = new java.util.ArrayList<Entity>();
+    private static List<Entity> babies = new java.util.ArrayList<Entity>();
     
     // 2D world representation as 1D list for efficiency
     // Each grid cell holds a list of entities at that location
@@ -25,6 +25,8 @@ public abstract class Entity {
      * ======================================================================== */
 
     private static java.util.Random rand = new java.util.Random();
+    
+
     public static int getRandomInt(int max) {
         return rand.nextInt(max);
     }
@@ -160,6 +162,36 @@ public abstract class Entity {
         child.y_coord = parent.y_coord;  
         move(child,direction,1);
 
+        // Handle MaintenanceBot gene mutation
+        if (parent instanceof MaintenanceBot && child instanceof MaintenanceBot) {
+            MaintenanceBot parentBot = (MaintenanceBot) parent;
+            MaintenanceBot childBot = (MaintenanceBot) child;
+            
+            // Copy parent genes to child
+            int[] parentGenes = parentBot.getGenes();
+            int[] childGenes = childBot.getGenes();
+            for (int i = 0; i < parentGenes.length; i++) {
+                childGenes[i] = parentGenes[i];
+            }
+            
+            // Find non-zero genes to decrement
+            java.util.ArrayList<Integer> candidates = new java.util.ArrayList<>();
+            for (int i = 0; i < childGenes.length; i++) {
+                if (childGenes[i] > 0) {
+                    candidates.add(i);
+                }
+            }
+            
+            if (!candidates.isEmpty()) {
+                // Pick a gene to lose
+                int loseIdx = candidates.get(getRandomInt(candidates.size()));
+                childGenes[loseIdx]--;
+                
+                // Pick a gene to gain
+                int gainIdx = getRandomInt(childGenes.length);
+                childGenes[gainIdx]++;
+            }
+        }
             
         // add to babies  
         babies.add(child);
@@ -178,8 +210,15 @@ public abstract class Entity {
      * must be implemented by each subclass.
      * ======================================================================== */
 
-
+    /**
+     * Performs this entity's action for the current timestep.
+     * Each entity type decides what to do here (move, reproduce, etc.).
+     */
     protected  abstract void doTimeStep();  
+    
+    /**
+     * Returns the display character for this entity type.
+     */
     @Override
     public  abstract String toString(); 
 
@@ -423,6 +462,9 @@ public abstract class Entity {
      * World management
      * ======================================================================== */
 
+    /**
+     * Clears all entities from the world and resets the simulation.
+     */
     public static void clearWorld() {
         population.clear();
         babies.clear();
@@ -647,7 +689,9 @@ public abstract class Entity {
         return entity.x_coord != originalX || entity.y_coord != originalY;
     }
 
-
+    /**
+     * Calls doTimeStep() on all existing entities.
+     */
     private static void runTimesteps(){ 
         try {  
             // (1) all existing do specfic timestpe
@@ -660,6 +704,10 @@ public abstract class Entity {
             e.printStackTrace();
         }
     }
+    
+    /**
+     * Deducts rest energy cost and removes dead entities (energy <= 0).
+     */
     private static void removeDeadEntities() { 
         if (population == null || population.isEmpty()) {
             return;
@@ -681,6 +729,9 @@ public abstract class Entity {
         }
     }
 
+    /**
+     * Adds all offspring born this timestep to the world.
+     */
     private static void addOffspring(){  
         if (babies == null || babies.isEmpty()) {
             return;
@@ -698,6 +749,7 @@ public abstract class Entity {
         }
         babies.clear();
     } 
+
     private static void resetMovement(){ 
         try {  
             for (List<Boolean> walked : hasWalked){ 

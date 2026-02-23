@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,6 +37,9 @@ public class MaintenanceBot extends Entity {
         dir = Entity.getRandomInt(GENE_AMOUNT);
     }
 
+    /**
+     * Moves forward based on gene distribution, reproduces at 150 energy.
+     */
     @Override
     public void doTimeStep() {
         // Move forward
@@ -46,11 +48,6 @@ public class MaintenanceBot extends Entity {
         // Reproduce only when energy > 150
         if (this.getEnergy() > REPRODUCTION_ENERGY_MIN) {
             reproduce(this, Entity.getRandomInt(8));
-            // Access the newly added baby directly from babies list
-            if (!babies.isEmpty()) {
-                Entity child = babies.get(babies.size() - 1);
-                geneMutation(this, child);
-            }
         }
 
         // Update direction based on genes distribution
@@ -67,43 +64,26 @@ public class MaintenanceBot extends Entity {
         dir = (dir + offset) % 8;
     }
 
-    private void geneMutation(Entity parent, Entity offspring) {
-        if (!(parent instanceof MaintenanceBot) || !(offspring instanceof MaintenanceBot)) {
-            return;
-        }
-
-        MaintenanceBot maintenanceParent = (MaintenanceBot) parent;
-        MaintenanceBot maintenanceOffspring = (MaintenanceBot) offspring;
-
-        // Copy genes
-        for (int i = 0; i < GENE_AMOUNT; i++) {
-            maintenanceOffspring.genes[i] = maintenanceParent.genes[i];
-        }
-
-        // Pick a non-zero gene to decrement
-        ArrayList<Integer> candidates = new ArrayList<>();
-        for (int i = 0; i < GENE_AMOUNT; i++) {
-            if (maintenanceOffspring.genes[i] > 0) {
-                candidates.add(i);
-            }
-        }
-        if (candidates.isEmpty()) {
-            return;
-        }
-
-        int loseIdx = candidates.get(Entity.getRandomInt(candidates.size()));
-        maintenanceOffspring.genes[loseIdx]--;
-
-        // Pick any gene to increment
-        int gainIdx = Entity.getRandomInt(GENE_AMOUNT);
-        maintenanceOffspring.genes[gainIdx]++;
+    /**
+     * Returns the gene array for this bot. 
+     * @param genes - geners array
+     */
+    public int[] getGenes() {
+        return genes;
     }
 
+    /**
+     * Display character is 'M' for MaintenanceBot. 
+     * @param display character is 'M' for MaintenanceBot
+     */
     @Override
     public String toString() {
         return "M";
     }
 
+    /**
+     * MaintenanceBots always fight (aggressive behavior).
+     */
     @Override
     public boolean fight(String opp) {
         return true;
@@ -152,9 +132,9 @@ public class MaintenanceBot extends Entity {
         double rightPercent = (geneSum[RIGHT] * 100.0) / totalSum;
         double leftPercent = (geneSum[LEFT] * 100.0) / totalSum;
 
-        System.out.print(count + " total MaintenanceBots    " + straightPercent + "% straight   ");
-        System.out.print(backPercent + "% back   ");
-        System.out.print(rightPercent + "% right   ");
-        System.out.println(leftPercent + "% left   ");
+        System.out.printf("%d total MaintenanceBots    %.2f%% straight   ", count, straightPercent);
+        System.out.printf("%.2f%% back   ", backPercent);
+        System.out.printf("%.2f%% right   ", rightPercent);
+        System.out.printf("%.2f%% left   %n", leftPercent);
     }
 }

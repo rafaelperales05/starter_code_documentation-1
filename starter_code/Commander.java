@@ -16,6 +16,10 @@ public class Commander extends Entity {
     private int direction = Entity.getRandomInt(8);
     private int stepsUntilTurn = 4;
 
+    /**
+     * Commanders walk in straight lines, changing direction every 4 steps.
+     * They reproduce when energy reaches 150.
+     */
     @Override
     public void doTimeStep() {
         walk(direction);
@@ -29,6 +33,9 @@ public class Commander extends Entity {
         }
     }
 
+    /**
+     * Display character is 'C' for Commander.
+     */
     @Override
     public String toString() {
         return "C";
@@ -59,6 +66,14 @@ public class Commander extends Entity {
         
         // Peaceful toward other entities
         return false;
+    }
+
+    /**
+     * Print statistics for Commander entities.
+     */
+    public static void runStats(java.util.List<Entity> entities) {
+        int count = (entities == null) ? 0 : entities.size();
+        System.out.println(count + " total Commanders    Status: Hunting to maintain ecosystem balance");
     }
 
 }

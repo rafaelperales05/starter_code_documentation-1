@@ -18,13 +18,16 @@
 public class Engineer extends Entity {
 
     private static final int REPRODUCTION_ENERGY_MIN = 150;
-    private static final int ENGINEER_FIGHT_CHANCE = 3;
+    private static final int ENGINEER_FIGHT_CHANCE = 5;
     private static final int ROW_LENGTH = Math.max(8, Params.world_width / 3);
 
     // Smart farming movement: systematic row-based pattern
     private int horizontalDirection = 0; // 0 = East, 4 = West
     private int stepsInCurrentRow = 0;
 
+    /**
+     * Engineers move in a systematic row pattern and reproduce at 150 energy.
+     */
     @Override
     public void doTimeStep() {
         performFarmingMovement();
@@ -55,6 +58,9 @@ public class Engineer extends Entity {
         }
     }
 
+    /**
+     * Display character is 'E' for Engineer.
+     */
     @Override
     public String toString() {
         return "E";
@@ -81,6 +87,23 @@ public class Engineer extends Entity {
         
         // Peaceful toward everything else (bots, commanders, etc.)
         return false;
+    }
+
+    /**
+     * Print statistics for Engineer entities.
+     */
+    public static void runStats(java.util.List<Entity> entities) {
+        int count = (entities == null) ? 0 : entities.size();
+        int totalEnergy = 0;
+        
+        if (entities != null) {
+            for (Entity entity : entities) {
+                totalEnergy += entity.getEnergy();
+            }
+        }
+        
+        int averageEnergy = (count == 0) ? 0 : (totalEnergy / count);
+        System.out.println(count + " total Engineers    Average energy: " + averageEnergy + "    Status: Peacefully farming station resources");
     }
 
 }

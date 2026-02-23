@@ -53,7 +53,7 @@ public class Main {
                 // Invalid commands should print: "invalid command: <the input>"
                 // Commands with bad arguments should print: "error processing: <the input>"
                 case "show": 
-                    if (!hasArgCount(command, 1)) {
+                    if (command.length != 1) {
                         printProcessingError(command);
                         break;
                     }
@@ -77,13 +77,13 @@ public class Main {
                     break;
                 
                 case "quit":
-                    if (!hasArgCount(command, 1)) {
+                    if (command.length != 1) {
                         printProcessingError(command);
                     }
                     break;
 
                 case "help":
-                    if (!hasArgCount(command, 1)) {
+                    if (command.length != 1) {
                         printProcessingError(command);
                         break;
                     }
@@ -91,7 +91,7 @@ public class Main {
                     break;
 
                 case "?":
-                    if (!hasArgCount(command, 1)) {
+                    if (command.length != 1) {
                         printProcessingError(command);
                         break;
                     }
@@ -109,10 +109,17 @@ public class Main {
 
         /* Write your code above */
         System.out.flush();
-    }  
+    }   
+
+    /**
+     * Handles the "stats Type" command to display statistics for a given entity type.
+     * Validates the entity type and dispatches to the appropriate stats method.
+     * 
+     * @param command The command array where command[0] is "stats" and command[1] is the entity type name
+     */
     private static void runTypeStats(String[] command) { 
          try {
-            if (!hasArgCount(command, 2)) {
+            if (command.length != 2) {
                 printProcessingError(command);
                 return;
             }
@@ -142,15 +149,10 @@ public class Main {
                 MaintenanceBot.runStats(bots);
             } else if ("Commander".equals(entityType)) {
                 java.util.List<Entity> commanders = Entity.getInstances(entityType);
-                System.out.println(commanders.size() + " total " + entityType + "s    Status: Hunting to maintain ecosystem balance");
+                Commander.runStats(commanders);
             } else if ("Engineer".equals(entityType)) {
                 java.util.List<Entity> engineers = Entity.getInstances(entityType);
-                int totalEnergy = 0;
-                for (Entity entity : engineers) {
-                    totalEnergy += entity.getEnergy();
-                }
-                int averageEnergy = engineers.isEmpty() ? 0 : (totalEnergy / engineers.size());
-                System.out.println(engineers.size() + " total " + entityType + "s    Average energy: " + averageEnergy + "    Status: Peacefully farming station resources");
+                Engineer.runStats(engineers);
             } else {
                 // Default: just print count
                 Entity.runStats(entityType);
@@ -166,12 +168,14 @@ public class Main {
     } 
 
     /**
-     * Sets random seed and error checks seed
-     * @param command
+     * Handles the "seed number" command to set the random number generator seed.
+     * Validates that the seed is a valid long integer (positive or negative).
+     * 
+     * @param command The command array where command[0] is "seed" and command[1] is the seed value
      */
     private static void setSeed(String[] command) {
         try {
-            if (!hasArgCount(command, 2)) {
+            if (command.length != 2) {
                 printProcessingError(command);
                 return;
             }
@@ -189,14 +193,18 @@ public class Main {
         }
  
     }
+    
     /**
-     * Creates n amount of the given entity type 
-     * @param command - contains "make", entity type, and optional count
+     * Handles the "make Type [count]" command to create one or more entities.
+     * If count is omitted, creates exactly one entity. Validates that the entity
+     * type exists and the count is a positive integer.
+     * 
+     * @param command The command array where command[0] is "make", command[1] is the entity type,
+     *                and command[2] is the optional count
      */
-
     private static void makeType(String[] command) {
         try {
-            if (!(hasArgCount(command, 2) || hasArgCount(command, 3))) {
+            if (!(command.length == 2 || command.length == 3)) {
                 printProcessingError(command);
                 return;
             }
@@ -226,12 +234,14 @@ public class Main {
     } 
 
     /**
-     * Advances simulation by n amount of steps. Checks for valid number and ensures it is a positive number.
-     * @param command - contains optional amount of steps to advance (defaults to 1)
+     * Handles the "step [count]" command to advance the simulation by one or more time steps.
+     * If count is omitted, advances by exactly one step. Validates that count is a positive integer.
+     * 
+     * @param command The command array where command[0] is "step" and command[1] is the optional count
      */
     private static void advanceTime(String[] command){ 
         try {
-            if (!(hasArgCount(command, 1) || hasArgCount(command, 2))) {
+            if (!(command.length == 1 || command.length == 2)) {
                 printProcessingError(command);
                 return;
             }
@@ -255,10 +265,13 @@ public class Main {
         }
     }
 
-    private static boolean hasArgCount(String[] command, int expectedLength) {
-        return command.length == expectedLength;
-    }
-
+    /**
+     * Parses a string into a positive integer.
+     * Returns null if the string is not a valid positive integer.
+     * 
+     * @param value The string to parse
+     * @return The parsed positive integer, or null if invalid
+     */
     private static Integer parsePositiveInt(String value) {
         if (value == null || value.isEmpty()) {
             return null;
@@ -276,6 +289,13 @@ public class Main {
         }
     }
 
+    /**
+     * Parses a string into a Long seed value (accepts positive or negative integers).
+     * Returns null if the string is not a valid long integer.
+     * 
+     * @param value The string to parse
+     * @return The parsed Long value, or null if invalid
+     */
     private static Long parseLongSeed(String value) {
         if (value == null || value.isEmpty()) {
             return null;
@@ -299,6 +319,12 @@ public class Main {
         }
     }
 
+    /**
+     * Prints an error message indicating that the given command had processing errors.
+     * Outputs: "error processing: <command string>"
+     * 
+     * @param command The command array that failed to process
+     */
     private static void printProcessingError(String[] command) {
         System.out.println("error processing: " + errorToString(command));
     }
