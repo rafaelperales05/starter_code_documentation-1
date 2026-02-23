@@ -102,20 +102,22 @@ public class MaintenanceBot extends Entity {
         MaintenanceBot maintenanceParent = (MaintenanceBot) parent;
         MaintenanceBot maintenanceOffspring = (MaintenanceBot) offspring;
 
-        // copy genes, and check if 0 
-        ArrayList<Integer> indexZero = new ArrayList<>();  
-
         for (int i = 0; i < GENE_AMOUNT; i++) {
             maintenanceOffspring.genes[i] = maintenanceParent.genes[i];  
-            // create an array of indexs > 0, so we can sample 
-            if (maintenanceOffspring.genes[i] > 0 ){ 
-                indexZero.add(i);
-            } 
         }  
-
-        Integer indexDec = indexZero.get(Entity.getRandomInt(indexZero.size())); 
-        maintenanceOffspring.genes[indexDec]--; 
-        maintenanceOffspring.genes[Entity.getRandomInt(GENE_AMOUNT)]++;
+        
+        // Safety check to ensure there is at least one gene to decrement 
+        int index = -1;
+        while( index == -1){ 
+            int random = Entity.getRandomInt(GENE_AMOUNT);
+            if (maintenanceOffspring.genes[random] > 0){ 
+                index = random;   
+                maintenanceOffspring.genes[random]--; 
+            }
+        }        
+        int randomGeneIndex = Entity.getRandomInt(GENE_AMOUNT);
+        maintenanceOffspring.genes[randomGeneIndex]++;
+        
     
     }
 
@@ -152,7 +154,6 @@ public class MaintenanceBot extends Entity {
 
     }  
 
-    // TODO- edge case 0 bots
     /**
      * getDistribution sums up the genes from all active bots and then prints 
      * the distribution.  

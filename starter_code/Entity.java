@@ -150,8 +150,10 @@ public abstract class Entity {
 
         //set energy 
         int parentEnergy = parent.getEnergy();  
-        child.setEnergy((int) Math.floor(parentEnergy/2));  
-        parent.setEnergy((int) Math.ceil(parentEnergy/2)); 
+        int childEnergy = parentEnergy / 2;
+        int newParentEnergy = parentEnergy - childEnergy;
+        child.setEnergy(childEnergy);  
+        parent.setEnergy(newParentEnergy); 
 
         // set offspring coordinates
         child.x_coord = parent.x_coord; 

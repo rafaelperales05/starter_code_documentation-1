@@ -15,16 +15,17 @@ import java.util.List;
 public class Commander extends Entity {
 
     private static final int REPRODUCTION_ENERGY_MIN = 220;
-    private static final int REPRODUCTION_CHANCE = 10;
+    private static final int REPRODUCTION_CHANCE = 20;
     private static final int PATROL_STEPS_BEFORE_TURN = 4;
-    private static final int FIGHT_ENERGY_MIN = 120;
+    private static final int FIGHT_ENERGY_MIN = 180;
+    private static final int RUN_ENERGY_THRESHOLD = 140;
 
     private int direction = Entity.getRandomInt(8);
     private int stepsUntilTurn = PATROL_STEPS_BEFORE_TURN;
 
     @Override
     public void doTimeStep() {
-        if (this.getEnergy() > Params.start_energy) {
+        if (this.getEnergy() >= RUN_ENERGY_THRESHOLD) {
             run(direction);
         } else {
             walk(direction);
@@ -50,6 +51,9 @@ public class Commander extends Entity {
     public boolean fight(String opp) {
         if ("*".equals(opp)) {
             return true;
+        }
+        if ("M".equals(opp)) {
+            return false;
         }
         return this.getEnergy() >= FIGHT_ENERGY_MIN;
     }
