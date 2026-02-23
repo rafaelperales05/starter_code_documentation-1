@@ -53,6 +53,10 @@ public class Main {
                 // Invalid commands should print: "invalid command: <the input>"
                 // Commands with bad arguments should print: "error processing: <the input>"
                 case "show": 
+                    if (!hasArgCount(command, 1)) {
+                        printProcessingError(command);
+                        break;
+                    }
                     Entity.displayWorld();
                     break;
 
@@ -73,17 +77,28 @@ public class Main {
                     break;
                 
                 case "quit":
+                    if (!hasArgCount(command, 1)) {
+                        printProcessingError(command);
+                    }
                     break;
 
                 case "help":
+                    if (!hasArgCount(command, 1)) {
+                        printProcessingError(command);
+                        break;
+                    }
                     printHelp();
                     break;
 
                 case "?":
+                    if (!hasArgCount(command, 1)) {
+                        printProcessingError(command);
+                        break;
+                    }
                     printCommands();
                     break;
 
-                case "":
+                case "": 
                     break;
 
                 default:
@@ -97,21 +112,32 @@ public class Main {
     }  
     private static void runTypeStats(String[] command) { 
          try {
-            if (command.length < 2 || command.length > 2) {
-                System.out.println("error processing: " + errorToString(command));
+            if (!hasArgCount(command, 2)) {
+                printProcessingError(command);
                 return;
             }
             String entityType = command[1];
+
+            if (entityType == null || entityType.isEmpty() || Character.isLowerCase(entityType.charAt(0))) {
+                printProcessingError(command);
+                return;
+            }
         
             // temporary instance to call  runStats
             Class<?> entityClass = Class.forName(entityType);
+
+            if (!Entity.class.isAssignableFrom(entityClass)) {
+                printProcessingError(command);
+                return;
+            }
+
             Entity tempEntity = (Entity) entityClass.getDeclaredConstructor().newInstance();
             tempEntity.runStats(entityType);
         
         } catch (InvalidEntityException e) {
-            System.out.println("error processing: " + errorToString(command));
+            printProcessingError(command);
         } catch (Exception e) {
-            System.out.println("error processing: " + errorToString(command));
+            printProcessingError(command);
         }
 
     } 
@@ -122,26 +148,21 @@ public class Main {
      */
     private static void setSeed(String[] command) {
         try {
-            if (command.length < 2 || command.length > 2) {
-                System.out.println("error processing: " + errorToString(command));
+            if (!hasArgCount(command, 2)) {
+                printProcessingError(command);
                 return;
             }
-            // Allow negative numbers for seed
-            String seedStr = command[1];
-            if (seedStr.startsWith("-")) {
-                seedStr = seedStr.substring(1);
+
+            Long seed = parseLongSeed(command[1]);
+            if (seed == null) {
+                printProcessingError(command);
+                return;
             }
-            for (char ch : seedStr.toCharArray()) {
-                if (!Character.isDigit(ch)) {
-                    System.out.println("error processing: " + errorToString(command));
-                    return;
-                }   
-            }    
-            long seed = Long.parseLong(command[1]);  
+
             Entity.setSeed(seed); 
         } 
         catch (Exception e) { 
-            System.out.println("error processing: " + errorToString(command));
+            printProcessingError(command);
         }
  
     }
@@ -152,8 +173,8 @@ public class Main {
 
     private static void makeType(String[] command) {
         try {
-            if (command.length < 2 || command.length > 3) {
-                System.out.println("error processing: " + errorToString(command));
+            if (!(hasArgCount(command, 2) || hasArgCount(command, 3))) {
+                printProcessingError(command);
                 return;
             }
             
@@ -161,17 +182,12 @@ public class Main {
             int count = 1; // default to 1 if not specified
             
             if (command.length == 3) {
-                for (char ch : command[2].toCharArray()) {
-                    if (!Character.isDigit(ch)) {
-                        System.out.println("error processing: " + errorToString(command));
-                        return;
-                    }   
-                }
-                count = Integer.parseInt(command[2]);
-                if (count <= 0) {
-                    System.out.println("error processing: " + errorToString(command));
+                Integer parsedCount = parsePositiveInt(command[2]);
+                if (parsedCount == null) {
+                    printProcessingError(command);
                     return;
                 }
+                count = parsedCount;
             }
             
             for (int i = 0; i < count; i++){ 
@@ -179,10 +195,10 @@ public class Main {
             } 
         } 
         catch (InvalidEntityException e) {
-            System.out.println("error processing: " + errorToString(command));
+            printProcessingError(command);
         }
         catch (Exception e) { 
-            System.out.println("error processing: " + errorToString(command));
+            printProcessingError(command);
         }
     } 
 
@@ -192,33 +208,76 @@ public class Main {
      */
     private static void advanceTime(String[] command){ 
         try {
-            if (command.length > 2) {
-                System.out.println("error processing: " + errorToString(command));
+            if (!(hasArgCount(command, 1) || hasArgCount(command, 2))) {
+                printProcessingError(command);
                 return;
             }
             
             int count = 1; // default to 1 if not specified
             
             if (command.length == 2) {
-                for (char ch : command[1].toCharArray()) {
-                    if (!Character.isDigit(ch)) {
-                        System.out.println("error processing: " + errorToString(command));
-                        return;
-                    }   
-                }    
-                count = Integer.parseInt(command[1]);   
-                if (count <= 0){ 
-                    System.out.println("error processing: " + errorToString(command));
+                Integer parsedCount = parsePositiveInt(command[1]);
+                if (parsedCount == null) {
+                    printProcessingError(command);
                     return;
                 }
+                count = parsedCount;
             }
             
             for (int i = 0; i < count; i++){ 
                 Entity.worldTimeStep(); 
             } 
         } catch (Exception e) {
-            System.out.println("error processing: " + errorToString(command));
+            printProcessingError(command);
         }
+    }
+
+    private static boolean hasArgCount(String[] command, int expectedLength) {
+        return command.length == expectedLength;
+    }
+
+    private static Integer parsePositiveInt(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        for (char ch : value.toCharArray()) {
+            if (!Character.isDigit(ch)) {
+                return null;
+            }
+        }
+        try {
+            int parsed = Integer.parseInt(value);
+            return parsed > 0 ? parsed : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static Long parseLongSeed(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        String digits = value;
+        if (digits.startsWith("-")) {
+            digits = digits.substring(1);
+        }
+        if (digits.isEmpty()) {
+            return null;
+        }
+        for (char ch : digits.toCharArray()) {
+            if (!Character.isDigit(ch)) {
+                return null;
+            }
+        }
+        try {
+            return Long.parseLong(value);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static void printProcessingError(String[] command) {
+        System.out.println("error processing: " + errorToString(command));
     }
 
 
@@ -238,8 +297,8 @@ public class Main {
         System.out.println("                        spawn automatically each step.");
         System.out.println("  MaintenanceBot (M)  - Uses a genetic algorithm to evolve movement.");
         System.out.println("                        Always fights. Reproduces with mutation.");
-        System.out.println("  Commander (C)       - Custom entity (your design).");
-        System.out.println("  Engineer (E)        - Custom entity (your design).");
+        System.out.println("  Commander (C)       - Always fights. Keeps population under control.");
+        System.out.println("  Engineer (E)        - Keeps systems and populations healthy. Avoids fights and gives energy back to other entities.");
         System.out.println();
         System.out.println("World:");
         System.out.println("  Grid size:    " + Params.world_width + " x " + Params.world_height + " (wraps around at edges)");

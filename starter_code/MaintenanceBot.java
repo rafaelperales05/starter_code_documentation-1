@@ -195,9 +195,9 @@ public class MaintenanceBot extends Entity {
         double backPercent = (geneSum[BACK] * 100.0) / totalSum;
         double leftPercent = (geneSum[LEFT] * 100.0) / totalSum;
         
-        System.out.println( straightPercent + "%" +  " straight   ");
-        System.out.println(backPercent + "%" +  " back   ");
-        System.out.println(rightPercent + "%" +  " right   ");
+        System.out.print(" total " + className + "s    " + straightPercent + "%" +  " straight   ");
+        System.out.print(backPercent + "%" +  " back   ");
+        System.out.print(rightPercent + "%" +  " right   ");
         System.out.println(leftPercent + "%" +  " left   ");
     }
 

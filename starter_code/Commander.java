@@ -1,3 +1,5 @@
+import java.util.List;
+
 /**
  * Commander — a custom entity type (your design).
  * 
@@ -12,17 +14,46 @@
  */
 public class Commander extends Entity {
 
-    // TODO: Implement this class 
-    @Override 
-    public void doTimeStep(){};  
+    private static final int REPRODUCTION_ENERGY_MIN = 220;
+    private static final int REPRODUCTION_CHANCE = 10;
+    private static final int PATROL_STEPS_BEFORE_TURN = 4;
+
+    private int direction = Entity.getRandomInt(8);
+    private int stepsUntilTurn = PATROL_STEPS_BEFORE_TURN;
+
+    @Override
+    public void doTimeStep() {
+        if (this.getEnergy() > Params.start_energy) {
+            run(direction);
+        } else {
+            walk(direction);
+        }
+
+        stepsUntilTurn--;
+        if (stepsUntilTurn <= 0) {
+            direction = Entity.getRandomInt(8);
+            stepsUntilTurn = PATROL_STEPS_BEFORE_TURN;
+        }
+
+        if (this.getEnergy() >= REPRODUCTION_ENERGY_MIN && Entity.getRandomInt(REPRODUCTION_CHANCE) == 0) {
+            reproduce(this, Entity.getRandomInt(8));
+        }
+    }
+
     @Override
     public String toString() {
-        return "";
+        return "C";
     }
 
     @Override
     public boolean fight(String opp) {
-        return false;
+        return true;
+    }
+
+    @Override
+    public void runStats(String className) throws InvalidEntityException {
+        List<Entity> commanders = getInstances(className);
+        System.out.println(commanders.size() + " total " + className + "s    Status: Leading the station efficiently");
     }
 
 }

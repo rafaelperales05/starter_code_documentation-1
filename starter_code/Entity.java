@@ -1,5 +1,6 @@
 import java.net.ProtocolException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public abstract class Entity {
@@ -184,6 +185,15 @@ public abstract class Entity {
 
     protected  abstract boolean fight(String Opp);
 
+    /**
+     * Optional hook for custom interaction when two entities share a cell.
+     * Return true if the encounter was handled and combat should be skipped
+     * for this pair in the current resolution pass.
+     */
+    protected boolean resolveSharedBlock(Entity other) {
+        return false;
+    }
+
 
     /* ========================================================================
      * Entity creation and lookup
@@ -310,7 +320,7 @@ public abstract class Entity {
                 throw new InvalidEntityException(className); 
             } 
             List<Entity> instances = getInstances(className); 
-            System.out.println(instances.size() + " total " + className + "    ");
+            System.out.print(instances.size());
         } 
         catch (ReflectiveOperationException e) {
             throw new InvalidEntityException(className); 
@@ -419,11 +429,11 @@ public abstract class Entity {
      */
 
     // Implement worldTimeStep and any helper methods it needs  
-
     /** 
      * Advances the simulation by one time step. 
      */
-    public static void worldTimeStep() { 
+
+    protected static void worldTimeStep() { 
         try {
             // 1. Each existing entity performs its action for this step
             runTimesteps(); 
@@ -450,16 +460,103 @@ public abstract class Entity {
         }
     }  
 
-    // TODO
-    private static void solveEncounters(){  
+    private static void solveEncounters(){
+        if (world == null || world.isEmpty()) {
+            return;
+        }
 
-        try {   
-            for (List<Entity> location : world){ 
-
+        for (List<Entity> location : world) {
+            if (location == null || location.isEmpty()) {
+                continue;
             }
-        } 
-        catch(Exception e) { 
-            e.printStackTrace();
+
+            while (location.size() > 1) {
+                Entity first = location.get(0);
+                Entity second = location.get(1);
+
+                if (first == null) {
+                    location.remove(0);
+                    continue;
+                }
+                if (second == null) {
+                    location.remove(1);
+                    continue;
+                }
+
+                if (first.getEnergy() <= 0) {
+                    removeFromWorld(first);
+                    population.remove(first);
+                    continue;
+                }
+                if (second.getEnergy() <= 0) {
+                    removeFromWorld(second);
+                    population.remove(second);
+                    continue;
+                }
+
+                boolean handledWithoutFight = first.resolveSharedBlock(second) || second.resolveSharedBlock(first);
+
+                if (first.getEnergy() <= 0) {
+                    removeFromWorld(first);
+                    population.remove(first);
+                    continue;
+                }
+                if (second.getEnergy() <= 0) {
+                    removeFromWorld(second);
+                    population.remove(second);
+                    continue;
+                }
+
+                if (first.x_coord != second.x_coord || first.y_coord != second.y_coord) {
+                    continue;
+                }
+
+                if (handledWithoutFight) {
+                    break;
+                }
+
+                fighters[0] = first;
+                fighters[1] = second;
+
+                boolean firstWillFight = first.fight(second.toString());
+                boolean secondWillFight = second.fight(first.toString());
+
+                fighters[0] = null;
+                fighters[1] = null;
+
+                if (first.getEnergy() <= 0) {
+                    removeFromWorld(first);
+                    population.remove(first);
+                    continue;
+                }
+                if (second.getEnergy() <= 0) {
+                    removeFromWorld(second);
+                    population.remove(second);
+                    continue;
+                }
+
+                if (first.x_coord != second.x_coord || first.y_coord != second.y_coord) {
+                    continue;
+                }
+
+                int firstRoll = firstWillFight ? getRandomInt(first.getEnergy()) : 0;
+                int secondRoll = secondWillFight ? getRandomInt(second.getEnergy()) : 0;
+
+                Entity winner;
+                Entity loser;
+                if (firstRoll >= secondRoll) {
+                    winner = first;
+                    loser = second;
+                } else {
+                    winner = second;
+                    loser = first;
+                }
+
+                winner.setEnergy(winner.getEnergy() + (loser.getEnergy() / 2));
+                loser.setEnergy(0);
+                removeFromWorld(loser);
+                population.remove(loser);
+            }
         }
     }
 
@@ -477,34 +574,42 @@ public abstract class Entity {
         }
     }
     private static void removeDeadEntities() { 
+        if (population == null || population.isEmpty()) {
+            return;
+        }
 
-        try { 
-            // (3) deduct rest energy cost 
-            for (Entity entity : population) {  
-                entity.setEnergy(entity.getEnergy() - Params.rest_energy_cost); 
-                if (entity.getEnergy() <= 0){ 
-                    population.remove(entity); 
-                    removeFromWorld(entity); 
-                }
-            } 
-            
-        } catch (Exception e) { 
-            e.printStackTrace();
+        Iterator<Entity> iterator = population.iterator();
+        while (iterator.hasNext()) {
+            Entity entity = iterator.next();
+            if (entity == null) {
+                iterator.remove();
+                continue;
+            }
+
+            entity.setEnergy(entity.getEnergy() - Params.rest_energy_cost);
+            if (entity.getEnergy() <= 0) {
+                removeFromWorld(entity);
+                iterator.remove();
+            }
         }
     }
 
     private static void addOffspring(){  
-        try {   
-            // (4) add offspring  
-            for (Entity entity : babies){ 
-                population.add(entity); 
-                addToWorld(entity); 
-                babies.remove(entity);
-            }
-        } 
-        catch (Exception e) { 
-            e.printStackTrace();
+        if (babies == null || babies.isEmpty()) {
+            return;
         }
+        if (population == null) {
+            return;
+        }
+
+        for (Entity entity : new ArrayList<>(babies)) {
+            if (entity == null) {
+                continue;
+            }
+            population.add(entity);
+            addToWorld(entity);
+        }
+        babies.clear();
     } 
     private static void resetMovement(){ 
         try {  
