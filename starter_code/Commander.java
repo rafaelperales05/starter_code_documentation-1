@@ -3,23 +3,22 @@ import java.util.List;
 /**
  * Commander — a custom entity type (your design).
  * 
- * Design a Commander entity that fills a meaningful role in the space
- * station ecosystem. Think about:
- *   - How does it move? (random, patrol pattern, toward/away from others?)
- *   - When does it fight? (always, never, conditionally?)
- *   - When does it reproduce? (at what energy threshold?)
- *   - What niche does it fill that helps the station stay self-sustaining?
+ * Commanders are apex predators who hunt other entities to maintain
+ * the station's population balance. They don't compete for PowerCells,
+ * instead gaining energy by hunting MaintenanceBots and Engineers.
+ * This creates a natural food chain:
+ * PowerCells → Bots/Engineers → Commanders
  * 
  * Display character: C
  */
 public class Commander extends Entity {
 
-    private static final int REPRODUCTION_ENERGY_MIN = 220;
-    private static final int REPRODUCTION_CHANCE = 20;
+    private static final int REPRODUCTION_ENERGY_MIN = 160;
+    private static final int REPRODUCTION_CHANCE = 120;
     private static final int PATROL_STEPS_BEFORE_TURN = 4;
-    private static final int FIGHT_ENERGY_MIN = 180;
-    private static final int RUN_ENERGY_THRESHOLD = 140;
-
+    private static final int FIGHT_ENERGY_MIN = 115;
+    private static final int RUN_ENERGY_THRESHOLD = 180; 
+    private static final int BOT_HUNT_CHANCE = 10; // 1 in 5 chance (20%) to hunt MaintenanceBots
     private int direction = Entity.getRandomInt(8);
     private int stepsUntilTurn = PATROL_STEPS_BEFORE_TURN;
 
@@ -47,21 +46,38 @@ public class Commander extends Entity {
         return "C";
     }
 
+    /**
+     * Commanders are apex predators:
+     * - Don't fight PowerCells (let bots/engineers have them)
+     * - Hunt MaintenanceBots 1/5 times for population control
+     * - Always hunt Engineers (primary prey)
+     * - Fight other entities conditionally based on energy
+     */
     @Override
     public boolean fight(String opp) {
+        // Don't compete for PowerCells - let bots harvest them
         if ("*".equals(opp)) {
             return true;
         }
+        
+        // Hunt MaintenanceBots 1/5 times to keep population balanced
         if ("M".equals(opp)) {
-            return false;
+            return Entity.getRandomInt(BOT_HUNT_CHANCE) == 0;
         }
+        
+        // Always hunt Engineers (primary prey)
+        if ("E".equals(opp)) {
+            return true;
+        }
+        
+        // Fight other entities only when strong enough
         return this.getEnergy() >= FIGHT_ENERGY_MIN;
     }
 
     @Override
     public void runStats(String className) throws InvalidEntityException {
         List<Entity> commanders = getInstances(className);
-        System.out.println(commanders.size() + " total " + className + "s    Status: Leading the station efficiently");
+        System.out.println(commanders.size() + " total " + className + "s    Status: Hunting to maintain ecosystem balance");
     }
 
 }

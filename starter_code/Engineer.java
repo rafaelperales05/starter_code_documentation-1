@@ -17,10 +17,11 @@ import java.util.List;
 public class Engineer extends Entity {
 
     private static final int LOW_ENERGY_THRESHOLD = 15;
-    private static final int REPRODUCTION_ENERGY_MIN = 160; // Lower threshold to sustain population
-    private static final int RUN_ENERGY_THRESHOLD = 250; // Conserve energy by walking more
-    private static final int ENGINEER_FIGHT_CHANCE = 5; // 1 in 5 chance (20%) per Engineer for population control
-    private static final int OTHER_FIGHT_CHANCE = 20; // 1 in 20 chance (5%) to fight non-PowerCell/non-Engineer entities
+    private static final int REPRODUCTION_ENERGY_MIN = 135; // Increased to slow population growth
+    private static final int RUN_ENERGY_THRESHOLD = 180; // Conserve energy by walking more
+    private static final int ENGINEER_FIGHT_CHANCE = 2; // 1 in 5 chance (20%) per Engineer for population control
+    private static final int COMMANDER_FIGHT_CHANCE = 10; // 1 in 10 chance (10%) to fight Commanders
+    private static final int OTHER_FIGHT_CHANCE =  10; // 1 in 10 chance (10%) to fight other entities
     private static final int FLEE_STEPS_MIN = 1;
     private static final int FLEE_STEPS_MAX = 3;
     private static final int ROW_LENGTH = Math.max(8, Params.world_width / 3); // Length of each farming row
@@ -88,8 +89,9 @@ public class Engineer extends Entity {
     /**
      * Engineers are efficient farmers who harvest PowerCells for energy.
      * They compete with other Engineers (1/5 chance per Engineer),
-     * occasionally fight others (1/20 chance) for balance,
-     * and flee most of the time.
+     * are peaceful toward MaintenanceBots (station maintenance),
+     * fight Commanders 1/10 times (allow predation but not always),
+     * and rarely fight others (1/50 chance).
      */
     @Override
     public boolean fight(String opp) {
@@ -103,8 +105,25 @@ public class Engineer extends Entity {
             return Entity.getRandomInt(ENGINEER_FIGHT_CHANCE) == 0;
         }
         
-        // Fight other entities 1 in 20 times for balance
-        // This adds some vulnerability without being too aggressive
+        // Never fight MaintenanceBots - they maintain the station!
+        if ("M".equals(opp)) {
+            fleeDirection = Entity.getRandomInt(8);
+            fleeStepsRemaining = FLEE_STEPS_MIN + Entity.getRandomInt(FLEE_STEPS_MAX - FLEE_STEPS_MIN + 1);
+            return false;
+        }
+        
+        // Fight Commanders 1 in 10 times - allows predation to work
+        if ("C".equals(opp)) {
+            if (Entity.getRandomInt(COMMANDER_FIGHT_CHANCE) == 0) {
+                return true;
+            }
+            // Most of the time, flee from Commanders
+            fleeDirection = Entity.getRandomInt(8);
+            fleeStepsRemaining = FLEE_STEPS_MIN + Entity.getRandomInt(FLEE_STEPS_MAX - FLEE_STEPS_MIN + 1);
+            return false;
+        }
+        
+        // Fight other entities 1 in 50 times for balance
         if (Entity.getRandomInt(OTHER_FIGHT_CHANCE) == 0) {
             return true;
         }
