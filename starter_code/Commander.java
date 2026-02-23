@@ -13,24 +13,20 @@ import java.util.List;
  */
 public class Commander extends Entity {
 
-    private static final int REPRODUCTION_ENERGY_MIN = 130;
-    private static final int PATROL_STEPS_BEFORE_TURN = 4;
-    private static final int BOT_HUNT_CHANCE = 20; // 1 in 10 chance to hunt MaintenanceBots
+    private static final int REPRODUCTION_ENERGY_MIN = 150;
+    private static final int BOT_HUNT_CHANCE = 30;
     private int direction = Entity.getRandomInt(8);
-    private int stepsUntilTurn = PATROL_STEPS_BEFORE_TURN;
+    private int stepsUntilTurn = 4;
 
     @Override
     public void doTimeStep() {
-        // Always walk to conserve energy
         walk(direction);
-
         stepsUntilTurn--;
         if (stepsUntilTurn <= 0) {
             direction = Entity.getRandomInt(8);
-            stepsUntilTurn = PATROL_STEPS_BEFORE_TURN;
+            stepsUntilTurn = 4;
         }
-
-        if (this.getEnergy() >= REPRODUCTION_ENERGY_MIN){
+        if (this.getEnergy() >= REPRODUCTION_ENERGY_MIN) {
             reproduce(this, Entity.getRandomInt(8));
         }
     }

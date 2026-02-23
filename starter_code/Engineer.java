@@ -19,9 +19,8 @@ import java.util.List;
  */
 public class Engineer extends Entity {
 
-    private static final int LOW_ENERGY_THRESHOLD = 15;
-    private static final int REPRODUCTION_ENERGY_MIN = 130;
-    private static final int ENGINEER_FIGHT_CHANCE = 3; // 1 in 3 chance to fight other Engineers
+    private static final int REPRODUCTION_ENERGY_MIN = 150;
+    private static final int ENGINEER_FIGHT_CHANCE = 3;
     private static final int ROW_LENGTH = Math.max(8, Params.world_width / 3);
 
     // Smart farming movement: systematic row-based pattern
@@ -93,37 +92,27 @@ public class Engineer extends Entity {
     @Override
     public boolean resolveSharedBlock(Entity otherEntity) {
         if (otherEntity instanceof MaintenanceBot) {
-            // Transfer energy if we have enough to spare
-            if (this.getEnergy() > 100) {  // Keep safety margin
-                int transferAmount = 20;
+            // Transfer energy if we have enough to reproduce
+            if (this.getEnergy() >= REPRODUCTION_ENERGY_MIN) {
+                int transferAmount = 30;
                 this.setEnergy(this.getEnergy() - transferAmount);
                 otherEntity.setEnergy(otherEntity.getEnergy() + transferAmount);
-                return true;  // Interaction handled peacefully
+                return true;
             }
         }
-        return false;  // No special interaction
+        return false;
     }
 
     @Override
     public void runStats(String className) throws InvalidEntityException {
         List<Entity> engineers = getInstances(className);
-
         int totalEnergy = 0;
         int lowEnergyCount = 0;
         for (Entity entity : engineers) {
-            int energy = entity.getEnergy();
-            totalEnergy += energy;
-            if (energy <= LOW_ENERGY_THRESHOLD) {
-                lowEnergyCount++;
-            }
+            totalEnergy += entity.getEnergy();
         }
-
         int averageEnergy = engineers.isEmpty() ? 0 : (totalEnergy / engineers.size());
-
-        System.out.print(engineers.size() + " total " + className + "s    ");
-        System.out.print("Average energy: " + averageEnergy + "    ");
-        System.out.print("Low energy: " + lowEnergyCount + "    ");
-        System.out.println("Status: Peacefully farming station resources");
+        System.out.println(engineers.size() + " total " + className + "s    Average energy: " + averageEnergy + "    Status: Peacefully farming station resources");
     }
 
 }

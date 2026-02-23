@@ -67,7 +67,7 @@ public class MaintenanceBot extends Entity {
             walk(this.dir);
                 
             // check for reproduction 
-            if (this.getEnergy() > REPRODUCTION_ENERGY_MIN){  
+            if (this.getEnergy() >= REPRODUCTION_ENERGY_MIN){  
                 Entity child =  reproduce(this,this.dir); 
                 geneMutation(this, child);
             }  
@@ -106,19 +106,21 @@ public class MaintenanceBot extends Entity {
             maintenanceOffspring.genes[i] = maintenanceParent.genes[i];  
         }  
         
-        // Safety check to ensure there is at least one gene to decrement 
-        int index = -1;
-        while( index == -1){ 
-            int random = Entity.getRandomInt(GENE_AMOUNT);
-            if (maintenanceOffspring.genes[random] > 0){ 
-                index = random;   
-                maintenanceOffspring.genes[random]--; 
+        // Find all genes that could be decremented
+        ArrayList<Integer> candidates = new ArrayList<>();
+        for (int i = 0; i < GENE_AMOUNT; i++) {
+            if (maintenanceOffspring.genes[i] > 0) {
+                candidates.add(i);
             }
-        }        
-        int randomGeneIndex = Entity.getRandomInt(GENE_AMOUNT);
-        maintenanceOffspring.genes[randomGeneIndex]++;
+        }
         
-    
+        // Use exactly one random call to pick the gene to lose
+        int loseIdx = candidates.get(Entity.getRandomInt(candidates.size()));
+        maintenanceOffspring.genes[loseIdx]--;
+        
+        // Use exactly one random call to pick the gene to gain
+        int gainIdx = Entity.getRandomInt(GENE_AMOUNT);
+        maintenanceOffspring.genes[gainIdx]++;
     }
 
 
