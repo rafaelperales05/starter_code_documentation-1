@@ -83,22 +83,4 @@ public class Engineer extends Entity {
         return false;
     }
 
-    /**
-     * Engineers maintain MaintenanceBots by transferring energy to them.
-     * This creates a symbiotic relationship where Engineers help bots survive.
-     */
-    @Override
-    public boolean resolveSharedBlock(Entity otherEntity) {
-        if (otherEntity instanceof MaintenanceBot) {
-            // Transfer energy if we have enough to reproduce
-            if (this.getEnergy() >= REPRODUCTION_ENERGY_MIN) {
-                int transferAmount = 30;
-                this.setEnergy(this.getEnergy() - transferAmount);
-                otherEntity.setEnergy(otherEntity.getEnergy() + transferAmount);
-                return true;
-            }
-        }
-        return false;
-    }
-
 }

@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 
 public abstract class Entity {
     private static List<Entity> population = new java.util.ArrayList<Entity>();
-    private static List<Entity> babies = new java.util.ArrayList<Entity>();
+    protected static List<Entity> babies = new java.util.ArrayList<Entity>();
     
     // 2D world representation as 1D list for efficiency
     // Each grid cell holds a list of entities at that location
@@ -170,17 +170,6 @@ public abstract class Entity {
         }
     }
 
-    /**
-     * Returns the last baby added to the babies list, or null if no babies exist.
-     * Used by MaintenanceBot for gene mutation after reproduction.
-     */
-    protected static Entity getLastBaby() {
-        if (babies.isEmpty()) {
-            return null;
-        }
-        return babies.get(babies.size() - 1);
-    }
-
 
     /* ========================================================================
      * Abstract methods
@@ -209,16 +198,7 @@ public abstract class Entity {
      * If both entities return false, they will attempt to escape.
      * If one or both return true, combat is resolved with random energy rolls.
      */
-    protected  abstract boolean fight(String Opp);
-
-    /**
-     * Optional hook for custom interaction when two entities share a cell.
-     * Return true if the encounter was handled and combat should be skipped
-     * for this pair in the current resolution pass.
-     */
-    protected boolean resolveSharedBlock(Entity other) {
-        return false;
-    }
+    protected  abstract boolean fight(String Opp); 
 
 
     /* ========================================================================
@@ -501,8 +481,8 @@ public abstract class Entity {
      * Resolves all encounters where multiple entities occupy the same location.
      * For each location with 2+ entities, the resolution order is:
      * 
-     * 1. Check if either entity handles the encounter peacefully (resolveSharedBlock)
-     * 2. If not peaceful, ask each entity if they want to fight
+     * 1. Check for special interactions (e.g., Engineer energy transfer to MaintenanceBot)
+     * 2. If not handled peacefully, ask each entity if they want to fight
      * 3. If neither wants to fight, attempt escape (one or both flee)
      * 4. If one or both want to fight, conduct combat (random roll based on energy)
      * 
@@ -510,7 +490,7 @@ public abstract class Entity {
      * - Always-fighting (e.g., aggressive Commanders)
      * - Never-fighting (peaceful entities)
      * - Conditional fighting (e.g., Engineers with 20% fight chance for population control)
-     * - Cooperative entities (using resolveSharedBlock for energy transfer, etc.)
+     * - Cooperative entities (e.g., Engineers transferring energy to MaintenanceBots)
      */
     private static void solveEncounters(){
         if (world == null || world.isEmpty()) {
@@ -546,7 +526,23 @@ public abstract class Entity {
                     continue;
                 }
 
-                boolean handledWithoutFight = first.resolveSharedBlock(second) || second.resolveSharedBlock(first);
+                // Engineer energy transfer to MaintenanceBot
+                boolean handledWithoutFight = false;
+                if (first instanceof Engineer && second instanceof MaintenanceBot) {
+                    if (first.getEnergy() >= 150) {
+                        int transferAmount = 30;
+                        first.setEnergy(first.getEnergy() - transferAmount);
+                        second.setEnergy(second.getEnergy() + transferAmount);
+                        handledWithoutFight = true;
+                    }
+                } else if (second instanceof Engineer && first instanceof MaintenanceBot) {
+                    if (second.getEnergy() >= 150) {
+                        int transferAmount = 30;
+                        second.setEnergy(second.getEnergy() - transferAmount);
+                        first.setEnergy(first.getEnergy() + transferAmount);
+                        handledWithoutFight = true;
+                    }
+                }
 
                 if (first.getEnergy() <= 0) {
                     removeFromWorld(first);

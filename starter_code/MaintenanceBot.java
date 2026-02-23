@@ -46,8 +46,11 @@ public class MaintenanceBot extends Entity {
         // Reproduce only when energy > 150
         if (this.getEnergy() > REPRODUCTION_ENERGY_MIN) {
             reproduce(this, Entity.getRandomInt(8));
-            Entity child = Entity.getLastBaby();
-            geneMutation(this, child);
+            // Access the newly added baby directly from babies list
+            if (!babies.isEmpty()) {
+                Entity child = babies.get(babies.size() - 1);
+                geneMutation(this, child);
+            }
         }
 
         // Update direction based on genes distribution
