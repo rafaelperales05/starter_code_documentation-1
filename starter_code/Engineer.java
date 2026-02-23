@@ -15,10 +15,10 @@ import java.util.List;
  */
 public class Engineer extends Entity {
 
-    private static final int LOW_ENERGY_THRESHOLD = 25;
-    private static final int RUN_ENERGY_THRESHOLD = 140;
+    private static final int LOW_ENERGY_THRESHOLD = 40;
+    private static final int RUN_ENERGY_THRESHOLD = 120;
     private static final int REPRODUCTION_ENERGY_MIN = 160;
-    private static final int DONATION_ENERGY_MIN = 120;
+    private static final int DONATION_ENERGY_MIN = 160;
     private static final int DONATION_AMOUNT = 5;
     private static final int PATROL_STEPS_BEFORE_TURN = 4;
 

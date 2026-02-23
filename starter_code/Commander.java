@@ -17,6 +17,7 @@ public class Commander extends Entity {
     private static final int REPRODUCTION_ENERGY_MIN = 220;
     private static final int REPRODUCTION_CHANCE = 10;
     private static final int PATROL_STEPS_BEFORE_TURN = 4;
+    private static final int FIGHT_ENERGY_MIN = 120;
 
     private int direction = Entity.getRandomInt(8);
     private int stepsUntilTurn = PATROL_STEPS_BEFORE_TURN;
@@ -47,7 +48,10 @@ public class Commander extends Entity {
 
     @Override
     public boolean fight(String opp) {
-        return true;
+        if ("*".equals(opp)) {
+            return true;
+        }
+        return this.getEnergy() >= FIGHT_ENERGY_MIN;
     }
 
     @Override

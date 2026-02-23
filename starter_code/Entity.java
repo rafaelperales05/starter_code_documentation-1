@@ -539,6 +539,17 @@ public abstract class Entity {
                     continue;
                 }
 
+                if (!firstWillFight && !secondWillFight) {
+                    boolean moved = attemptEncounterEscape(second);
+                    if (!moved) {
+                        moved = attemptEncounterEscape(first);
+                    }
+                    if (!moved) {
+                        break;
+                    }
+                    continue;
+                }
+
                 int firstRoll = firstWillFight ? getRandomInt(first.getEnergy()) : 0;
                 int secondRoll = secondWillFight ? getRandomInt(second.getEnergy()) : 0;
 
@@ -558,6 +569,23 @@ public abstract class Entity {
                 population.remove(loser);
             }
         }
+    }
+
+    private static boolean attemptEncounterEscape(Entity entity) {
+        if (entity == null || entity.getEnergy() <= 0) {
+            return false;
+        }
+
+        int originalX = entity.x_coord;
+        int originalY = entity.y_coord;
+
+        fighters[0] = entity;
+        fighters[1] = null;
+        entity.walk(getRandomInt(8));
+        fighters[0] = null;
+        fighters[1] = null;
+
+        return entity.x_coord != originalX || entity.y_coord != originalY;
     }
 
 
