@@ -13,22 +13,16 @@ import java.util.List;
  */
 public class Commander extends Entity {
 
-    private static final int REPRODUCTION_ENERGY_MIN = 160;
-    private static final int REPRODUCTION_CHANCE = 120;
+    private static final int REPRODUCTION_ENERGY_MIN = 130;
     private static final int PATROL_STEPS_BEFORE_TURN = 4;
-    private static final int FIGHT_ENERGY_MIN = 115;
-    private static final int RUN_ENERGY_THRESHOLD = 180; 
-    private static final int BOT_HUNT_CHANCE = 10; // 1 in 5 chance (20%) to hunt MaintenanceBots
+    private static final int BOT_HUNT_CHANCE = 20; // 1 in 10 chance to hunt MaintenanceBots
     private int direction = Entity.getRandomInt(8);
     private int stepsUntilTurn = PATROL_STEPS_BEFORE_TURN;
 
     @Override
     public void doTimeStep() {
-        if (this.getEnergy() >= RUN_ENERGY_THRESHOLD) {
-            run(direction);
-        } else {
-            walk(direction);
-        }
+        // Always walk to conserve energy
+        walk(direction);
 
         stepsUntilTurn--;
         if (stepsUntilTurn <= 0) {
@@ -36,7 +30,7 @@ public class Commander extends Entity {
             stepsUntilTurn = PATROL_STEPS_BEFORE_TURN;
         }
 
-        if (this.getEnergy() >= REPRODUCTION_ENERGY_MIN && Entity.getRandomInt(REPRODUCTION_CHANCE) == 0) {
+        if (this.getEnergy() >= REPRODUCTION_ENERGY_MIN){
             reproduce(this, Entity.getRandomInt(8));
         }
     }
@@ -47,31 +41,30 @@ public class Commander extends Entity {
     }
 
     /**
-     * Commanders are apex predators:
-     * - Don't fight PowerCells (let bots/engineers have them)
-     * - Hunt MaintenanceBots 1/5 times for population control
-     * - Always hunt Engineers (primary prey)
-     * - Fight other entities conditionally based on energy
+     * Commanders are hunters with simple behavior:
+     * - Harvest PowerCells (base food source)
+     * - Hunt Engineers (primary prey)
+     * - Rarely hunt MaintenanceBots (1/10 times)
      */
     @Override
     public boolean fight(String opp) {
-        // Don't compete for PowerCells - let bots harvest them
+        // Harvest PowerCells for base energy
         if ("*".equals(opp)) {
             return true;
         }
         
-        // Hunt MaintenanceBots 1/5 times to keep population balanced
-        if ("M".equals(opp)) {
-            return Entity.getRandomInt(BOT_HUNT_CHANCE) == 0;
-        }
-        
-        // Always hunt Engineers (primary prey)
+        // Hunt Engineers as primary prey
         if ("E".equals(opp)) {
             return true;
         }
         
-        // Fight other entities only when strong enough
-        return this.getEnergy() >= FIGHT_ENERGY_MIN;
+        // Rarely hunt MaintenanceBots to keep their population viable
+        if ("M".equals(opp)) {
+            return Entity.getRandomInt(BOT_HUNT_CHANCE) == 0;
+        }
+        
+        // Peaceful toward other entities
+        return false;
     }
 
     @Override
