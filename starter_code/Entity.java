@@ -185,6 +185,21 @@ public abstract class Entity {
     @Override
     public  abstract String toString(); 
 
+    /**
+     * Determines if this entity will fight when encountering another entity.
+     * 
+     * @param Opp - The display character (toString()) of the opponent entity
+     * @return true if this entity wants to fight, false if it wants to flee
+     * 
+     * This method can implement various fighting strategies:
+     * - Always fight: return true
+     * - Never fight (peaceful): return false
+     * - Conditional: return based on entity type, energy level, etc.
+     * - Probabilistic: return true with some random chance (e.g., 1 in 5)
+     * 
+     * If both entities return false, they will attempt to escape.
+     * If one or both return true, combat is resolved with random energy rolls.
+     */
     protected  abstract boolean fight(String Opp);
 
     /**
@@ -441,7 +456,7 @@ public abstract class Entity {
             runTimesteps(); 
 
             // 2. Resolve encounters — when multiple entities share a location 
-            // TODO
+            
             solveEncounters(); 
 
             // 3. Deduct rest energy cost and remove dead entities (energy <= 0)
@@ -462,6 +477,21 @@ public abstract class Entity {
         }
     }  
 
+    /**
+     * Resolves all encounters where multiple entities occupy the same location.
+     * For each location with 2+ entities, the resolution order is:
+     * 
+     * 1. Check if either entity handles the encounter peacefully (resolveSharedBlock)
+     * 2. If not peaceful, ask each entity if they want to fight
+     * 3. If neither wants to fight, attempt escape (one or both flee)
+     * 4. If one or both want to fight, conduct combat (random roll based on energy)
+     * 
+     * This supports various entity behaviors:
+     * - Always-fighting (e.g., aggressive Commanders)
+     * - Never-fighting (peaceful entities)
+     * - Conditional fighting (e.g., Engineers with 20% fight chance for population control)
+     * - Cooperative entities (using resolveSharedBlock for energy transfer, etc.)
+     */
     private static void solveEncounters(){
         if (world == null || world.isEmpty()) {
             return;
@@ -573,6 +603,17 @@ public abstract class Entity {
         }
     }
 
+    /**
+     * Attempts to make an entity escape from an encounter by moving to
+     * an adjacent occupied cell in a random direction.
+     * 
+     * Returns true if the entity successfully moved to a different location.
+     * Returns false if no valid escape location exists (all adjacent cells empty).
+     * 
+     * Note: This provides immediate one-time escape during encounter resolution.
+     * Entities can implement their own persistent flee behavior (like Engineers'
+     * multi-step fleeing) which activates in subsequent timesteps.
+     */
     private static boolean attemptEncounterEscape(Entity entity) {
         if (entity == null || entity.getEnergy() <= 0) {
             return false;

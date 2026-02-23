@@ -3,77 +3,80 @@ import java.util.List;
 /**
  * Engineer — a custom entity type (your design).
  * 
- * Design an Engineer entity that fills a different role from your Commander.
- * The two custom entities should complement each other in keeping the
- * ecosystem balanced. Think about:
- *   - How does it move? (random, patrol pattern, toward/away from others?)
- *   - When does it fight? (always, never, conditionally?)
- *   - When does it reproduce? (at what energy threshold?)
- *   - What happens to the ecosystem if you remove all Engineers?
+ * Engineers are efficient farmers who tend to the station's resources.
+ * They move systematically in rows like tending organized crop fields.
+ * They are completely peaceful toward all entities EXCEPT other Engineers,
+ * with whom they compete for resources (fight 1/10 times for population control).
+ * This keeps their population in check while making them non-threatening to others.
+ * 
+ * Movement pattern: Travels East across a row, moves South, then travels
+ * West across the next row, creating efficient coverage like plowing fields.
  * 
  * Display character: E
  */
 public class Engineer extends Entity {
 
     private static final int LOW_ENERGY_THRESHOLD = 15;
-    private static final int RUN_ENERGY_THRESHOLD = 200;
-    private static final int REPRODUCTION_ENERGY_MIN = 150;
-    private static final int DONATION_ENERGY_MIN = 80;
-    private static final int DONATION_AMOUNT = 5;
-    private static final int COMMANDER_SUPPORT_DONATION = 10;
-    private static final int BOT_SUPPORT_DONATION = 24;
-    private static final int SELF_ENERGY_RESERVE = 25;
-    private static final int HARVEST_BUFFER = 20;
-    private static final int EVASIVE_STEPS = 2;
+    private static final int REPRODUCTION_ENERGY_MIN = 160; // Lower threshold to sustain population
+    private static final int RUN_ENERGY_THRESHOLD = 250; // Conserve energy by walking more
+    private static final int ENGINEER_FIGHT_CHANCE = 5; // 1 in 5 chance (20%) per Engineer for population control
+    private static final int OTHER_FIGHT_CHANCE = 20; // 1 in 20 chance (5%) to fight non-PowerCell/non-Engineer entities
+    private static final int FLEE_STEPS_MIN = 1;
+    private static final int FLEE_STEPS_MAX = 3;
+    private static final int ROW_LENGTH = Math.max(8, Params.world_width / 3); // Length of each farming row
 
-    // Smart movement state:
-    // - Serpentine sweep (E/W with periodic S shift) for broad world coverage
-    // - Temporary evasive movement after hostile encounters
+    // Smart farming movement: systematic row-based pattern like tending organized crops
+    // Pattern: Move East across a row, then South one step, then West across, repeat
     private int horizontalDirection = 0; // 0 = East, 4 = West
-    private int stepsRemainingInRow = Math.max(1, Params.world_width - 1);
-    private boolean shiftToNextRow = false;
-    private int evasiveDirection = Entity.getRandomInt(8);
-    private int evasiveStepsRemaining = 0;
+    private int stepsInCurrentRow = 0;
+    
+    // Fleeing state: runs away from encounters at random
+    private int fleeDirection = Entity.getRandomInt(8);
+    private int fleeStepsRemaining = 0;
 
     @Override
     public void doTimeStep() {
-        performSmartMovement();
+        performFarmingMovement();
 
+        // Reproduce more readily than fighting entities
         if (this.getEnergy() >= REPRODUCTION_ENERGY_MIN) {
             reproduce(this, Entity.getRandomInt(8));
         }
     }
 
-    private void performSmartMovement() {
-        if (evasiveStepsRemaining > 0) {
+    /**
+     * Smart farming movement pattern:
+     * - If fleeing from an encounter, continue fleeing
+     * - Otherwise, move systematically in rows like tending organized crop fields
+     * - Goes East for a row, then South one step, then West for a row, repeat
+     */
+    private void performFarmingMovement() {
+        // If currently fleeing from an encounter, continue fleeing
+        if (fleeStepsRemaining > 0) {
             if (this.getEnergy() >= RUN_ENERGY_THRESHOLD) {
-                run(evasiveDirection);
+                run(fleeDirection);
             } else {
-                walk(evasiveDirection);
+                walk(fleeDirection);
             }
-            evasiveStepsRemaining--;
+            fleeStepsRemaining--;
             return;
         }
 
-        if (shiftToNextRow) {
-            walk(6); // move South one row between sweep passes
-            shiftToNextRow = false;
-            horizontalDirection = (horizontalDirection == 0) ? 4 : 0;
-            stepsRemainingInRow = Math.max(1, Params.world_width - 1);
-            return;
-        }
-
-        boolean canRunInRow = this.getEnergy() >= RUN_ENERGY_THRESHOLD && stepsRemainingInRow >= 2;
-        if (canRunInRow) {
-            run(horizontalDirection);
-            stepsRemainingInRow -= 2;
+        // Smart systematic farming pattern
+        stepsInCurrentRow++;
+        
+        // Move along the current row
+        if (stepsInCurrentRow < ROW_LENGTH) {
+            if (this.getEnergy() >= RUN_ENERGY_THRESHOLD) {
+                run(horizontalDirection);
+            } else {
+                walk(horizontalDirection);
+            }
         } else {
-            walk(horizontalDirection);
-            stepsRemainingInRow--;
-        }
-
-        if (stepsRemainingInRow <= 0) {
-            shiftToNextRow = true;
+            // End of row: move South to next row and switch direction
+            walk(6); // 6 = South
+            stepsInCurrentRow = 0;
+            horizontalDirection = (horizontalDirection == 0) ? 4 : 0; // Toggle between East and West
         }
     }
 
@@ -82,48 +85,34 @@ public class Engineer extends Entity {
         return "E";
     }
 
+    /**
+     * Engineers are efficient farmers who harvest PowerCells for energy.
+     * They compete with other Engineers (1/5 chance per Engineer),
+     * occasionally fight others (1/20 chance) for balance,
+     * and flee most of the time.
+     */
     @Override
     public boolean fight(String opp) {
-        if (!"*".equals(opp)) {
-            evasiveDirection = Entity.getRandomInt(8);
-            evasiveStepsRemaining = EVASIVE_STEPS;
-            return false;
+        // Always harvest PowerCells for energy (their food source)
+        if ("*".equals(opp)) {
+            return true;
         }
-
-        return this.getEnergy() < (REPRODUCTION_ENERGY_MIN + HARVEST_BUFFER);
-    }
-
-    @Override
-    protected boolean resolveSharedBlock(Entity other) {
-        if (other == null || other == this) {
-            return false;
+        
+        // Fight other Engineers 1 in 5 times to keep population under control
+        if ("E".equals(opp)) {
+            return Entity.getRandomInt(ENGINEER_FIGHT_CHANCE) == 0;
         }
-
-        String otherType = other.toString();
-
-        if ("*".equals(otherType)) {
-            return false;
+        
+        // Fight other entities 1 in 20 times for balance
+        // This adds some vulnerability without being too aggressive
+        if (Entity.getRandomInt(OTHER_FIGHT_CHANCE) == 0) {
+            return true;
         }
-
-        if (this.getEnergy() < DONATION_ENERGY_MIN) {
-            return false;
-        }
-
-        int baseDonation = DONATION_AMOUNT;
-        if ("M".equals(otherType)) {
-            baseDonation = BOT_SUPPORT_DONATION;
-        } else if ("C".equals(otherType)) {
-            baseDonation = COMMANDER_SUPPORT_DONATION;
-        }
-
-        int donation = Math.min(baseDonation, this.getEnergy() - SELF_ENERGY_RESERVE);
-        if (donation <= 0) {
-            return false;
-        }
-
-        this.setEnergy(this.getEnergy() - donation);
-        other.setEnergy(other.getEnergy() + donation);
-        return true;
+        
+        // Most of the time, flee from other entities
+        fleeDirection = Entity.getRandomInt(8);
+        fleeStepsRemaining = FLEE_STEPS_MIN + Entity.getRandomInt(FLEE_STEPS_MAX - FLEE_STEPS_MIN + 1);
+        return false;
     }
 
     @Override
@@ -145,7 +134,7 @@ public class Engineer extends Entity {
         System.out.print(engineers.size() + " total " + className + "s    ");
         System.out.print("Average energy: " + averageEnergy + "    ");
         System.out.print("Low energy: " + lowEnergyCount + "    ");
-        System.out.println("Status: Maintaining station systems");
+        System.out.println("Status: Peacefully farming station resources");
     }
 
 }
