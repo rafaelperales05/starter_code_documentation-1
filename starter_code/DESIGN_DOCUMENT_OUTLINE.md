@@ -8,9 +8,9 @@
 
 ## 1. System Overview
 
-This simulation models a space station ecosystem where different entity types interact to create a balanced food chain. The world is a toroidal 76×40 grid where entities move, consume resources, fight, and reproduce. The design goal was to create a self-sustaining ecosystem where no single entity type dominates or goes extinct—PowerCells provide base energy, MaintenanceBots and Engineers act as primary consumers, and Commanders serve as apex predators to maintain population balance.
+This simulation models a space station ecosystem where different entity types interact to create a balanced food chain. The world is a grid where entities move, consume energy, fight, and reproduce. The design goal was to create a self-sustaining ecosystem. 
 
-The simulation successfully achieves stable equilibrium under the right conditions. Each entity has specific movement patterns, energy requirements, and interaction rules that create dependencies. Engineers act as peaceful farmers who occasionally compete with each other and transfer energy to MaintenanceBots, creating a symbiotic relationship. Commanders hunt both Engineers and MaintenanceBots (with preference for Engineers) to regulate their populations. MaintenanceBots use genetic algorithms to evolve better movement patterns over time, making them more efficient energy collectors.
+The simulation successfully achieves stable equilibrium. Each entity has specific movement patterns, energy requirements, and interaction rules that create dependencies. Engineers act as peaceful farmers who occasionally compete with each other and transfer energy to MaintenanceBots. This is supposed to represent Engineers "fixing" the MaintenanceBots. Commanders hunt both Engineers and MaintenanceBots (with preference for Engineers) to regulate their populations. MaintenanceBots use genetic algorithms to evolve better movement patterns over time, making them more efficient energy collectors.
 
 The ecosystem maintains stability when the predator-prey ratios are balanced correctly. Too many Commanders leads to ecosystem collapse as they consume all the producers. Too few Commanders allows MaintenanceBots to overpopulate and deplete PowerCells. The simulation demonstrates emergent behavior where entity populations oscillate but remain within sustainable bounds, mimicking real-world predator-prey dynamics.
 
@@ -25,21 +25,20 @@ For each class you implemented, provide:
 
 ### 2.1 Commander
 
-Commanders are apex predators that maintain population balance in the ecosystem. They move in straight lines for 4 steps before randomly changing direction, creating an efficient hunting pattern that covers territory systematically. Commanders always fight PowerCells (for base energy), always fight Engineers (primary prey), and rarely hunt MaintenanceBots (only 1/30 times to keep bot populations viable). This selective hunting behavior prevents any one species from dominating.
+Commanders are used as a population control class. They move in straight lines for 4 steps before randomly changing direction, creating an efficient hunting pattern. Commanders always fight PowerCells (for base energy), always fight Engineers (primary prey), and rarely hunt MaintenanceBots (only 1/30 times to keep bot populations viable). This selective hunting behavior prevents any one species from dominating.
 
-Commanders reproduce when their energy reaches 150, which requires successfully hunting other entities. Their reproduction threshold is carefully balanced—high enough that they can't reproduce from PowerCells alone but achievable through hunting. This ensures Commanders only thrive when there's sufficient prey, creating natural population oscillation.
+Commanders reproduce when their energy reaches 150. Their reproduction threshold is carefully balanced—high enough that they can't reproduce from PowerCells alone. This ensures Commanders only thrive when there's sufficient prey, creating natural population oscillation.
+
+
+### 2.2 Engineer
 
 Engineers are peaceful farmers that provide stable energy flow to MaintenanceBots while acting as prey for Commanders. They move in an efficient row-based pattern (traveling East across a row, then South one step, then West across the next row) like systematically tending crop fields. This movement pattern maximizes their PowerCell collection efficiency. Engineers always harvest PowerCells and compete with other Engineers (1/5 chance) or Commanders (1/5 chance) for population control, but are peaceful toward MaintenanceBots.
 
 The key innovation is the energy transfer mechanic: when an Engineer with 150+ energy encounters a MaintenanceBot, they transfer 30 energy instead of fighting. This creates a symbiotic farming relationship—Engineers efficiently collect PowerCells and "feed" MaintenanceBots, helping support bot populations without direct competition. Engineers reproduce at 150 energy, making them productive farmers that can sustain both their own population and support bots.
 
-Engineers are essential because they provide a stable, predictable prey base for Commanders while simultaneously supporting MaintenanceBot populations through energy transfer. Without Engineers, the ecosystem becomes more volatile—Commanders would rely entirely on hunting aggressive MaintenanceBots (which always fight back), and MaintenanceBots would lack their symbiotic energy source. Engineers also provide population diversity, making the ecosystem more resilient to random events.total ecosystem collapse. Commanders create a natural check on herbivore populations, forcing them to balance reproduction with survival. The occasional MaintenanceBot hunting (1/30 chance) adds just enough pressure to prevent bot overpopulation without driving them extinct.
+Engineers are essential because they provide a stable, predictable prey base for Commanders while simultaneously supporting MaintenanceBot populations through energy transfer. 
 
-### 2.2 Engineer
 
-**Entity.java**: Made significant modifications to support the static runStats architecture. The key design decision was moving reproduce() logic to handle MaintenanceBot gene mutations internally, eliminating the need for helper methods that the autograder would reject. Also moved Engineer energy transfer logic into the solveEncounters() method using instanceof checks, allowing cooperative interactions alongside competitive ones.
-
-**Main.java**: Implements a command-line interface with extensive Javadoc documentation. The runTypeStats() method uses reflection to dispatch to class-specific static runStats methods in Commander, Engineer, and MaintenanceBot classes. This allows each entity type to display customized statistics while maintaining a clean interface. All error handling checks for edge cases like invalid class names, missing commands, and invalid numeric inputs.hat happens to the ecosystem if you remove Engineers entirely?_
 
 ### 2.3 Other Classes (if modified or relevant)
 

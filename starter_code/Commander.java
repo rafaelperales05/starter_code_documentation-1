@@ -11,8 +11,10 @@
  */
 public class Commander extends Entity {
 
-    private static final int REPRODUCTION_ENERGY_MIN = 150;
-    private static final int BOT_HUNT_CHANCE = 30;
+    private static final int REPRODUCTION_ENERGY_MIN = 250;
+    private static final int BOT_HUNT_CHANCE = 5; 
+    private static final int ENGINEER_FIGHT_CHANCE = 2;
+
     private int direction = Entity.getRandomInt(8);
     private int stepsUntilTurn = 4;
 
@@ -49,22 +51,18 @@ public class Commander extends Entity {
      */
     @Override
     public boolean fight(String opp) {
-        // Harvest PowerCells for base energy
+
         if ("*".equals(opp)) {
             return true;
+        } 
+        if ("E".equals(opp) ) {
+           return Entity.getRandomInt(ENGINEER_FIGHT_CHANCE) == 0;
         }
-        
-        // Hunt Engineers as primary prey
-        if ("E".equals(opp)) {
-            return true;
-        }
-        
         // Rarely hunt MaintenanceBots to keep their population viable
-        if ("M".equals(opp)) {
+        if ("M".equals(opp) || "C".equals(opp)) {
             return Entity.getRandomInt(BOT_HUNT_CHANCE) == 0;
         }
         
-        // Peaceful toward other entities
         return false;
     }
 
