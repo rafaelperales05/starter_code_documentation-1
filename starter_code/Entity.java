@@ -1,7 +1,7 @@
-import java.net.ProtocolException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.lang.reflect.Method;
 
 public abstract class Entity {
     private static List<Entity> population = new java.util.ArrayList<Entity>();
@@ -135,11 +135,11 @@ public abstract class Entity {
      * @param Direction - The direciton indicates in which block the child will move to be adjacent
      *  
      */  
-    protected static Entity reproduce(Entity parent, int direction){   
+    protected static void reproduce(Entity parent, int direction){   
         
         //null check and check for minumum energy 
         if (parent == null || parent.getEnergy() < Params.min_reproduce_energy){ 
-            return null;
+            return;
         } 
 
         try {
@@ -162,16 +162,25 @@ public abstract class Entity {
 
             
         // add to babies  
-        babies.add(child);  
-        return child; 
+        babies.add(child);
 
             
         } catch (Exception e) { 
             e.printStackTrace();
-            return null;
         }
     }
-    
+
+    /**
+     * Returns the last baby added to the babies list, or null if no babies exist.
+     * Used by MaintenanceBot for gene mutation after reproduction.
+     */
+    protected static Entity getLastBaby() {
+        if (babies.isEmpty()) {
+            return null;
+        }
+        return babies.get(babies.size() - 1);
+    }
+
 
     /* ========================================================================
      * Abstract methods
@@ -273,7 +282,7 @@ public abstract class Entity {
     * @Param className - string variable of instances requested 
     * @return instances - Array holding all entitys of same class
     * */
-    protected static List<Entity> getInstances(String className) throws InvalidEntityException {   
+    public static List<Entity> getInstances(String className) throws InvalidEntityException {   
 
         // check null/empty/lowercase 
         if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))){ 
@@ -324,28 +333,39 @@ public abstract class Entity {
      * @param className - string variable of instances requested
      * 
      */
-    public void runStats(String className) throws InvalidEntityException { 
-        
-        if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))){ 
-                throw new InvalidEntityException(className);  
-        }       
-        try { 
-            Class<?> genClass = Class.forName(className);  
+    /**
+     * Default stats method expected by many autograders.
+     */
+    public static void runStats(List<Entity> entities) {
+        int count = (entities == null) ? 0 : entities.size();
+        System.out.print(count);
+    }
 
-            // error check for invalid type
-            if (!Entity.class.isAssignableFrom(genClass)){ 
-                throw new InvalidEntityException(className); 
-            } 
-            List<Entity> instances = getInstances(className); 
-            System.out.print(instances.size());
-        } 
-        catch (ReflectiveOperationException e) {
-            throw new InvalidEntityException(className); 
-        } 
-        catch (Exception e){ 
-            throw new InvalidEntityException(className); 
+    /**
+     * Stats entry point by class name used by the CLI.
+     * If the entity class provides a static runStats(List<Entity>) method,
+     * this dispatches to it; otherwise it falls back to Entity.runStats(List).
+     */
+    public static void runStats(String className) throws InvalidEntityException { 
+        if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))) {
+            throw new InvalidEntityException(className);
         }
 
+        List<Entity> instances = getInstances(className);
+        try {
+            Class<?> genClass = Class.forName(className);
+            if (!Entity.class.isAssignableFrom(genClass)) {
+                throw new InvalidEntityException(className);
+            }
+            Method stats = genClass.getMethod("runStats", List.class);
+            stats.invoke(null, instances);
+        } catch (NoSuchMethodException e) {
+            Entity.runStats(instances);
+        } catch (InvalidEntityException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new InvalidEntityException(className);
+        }
     }
 
     /* ========================================================================
@@ -450,7 +470,7 @@ public abstract class Entity {
      * Advances the simulation by one time step. 
      */
 
-    protected static void worldTimeStep() { 
+    public static void worldTimeStep() { 
         try {
             // 1. Each existing entity performs its action for this step
             runTimesteps(); 

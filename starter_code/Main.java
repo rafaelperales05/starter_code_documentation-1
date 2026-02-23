@@ -123,7 +123,7 @@ public class Main {
                 return;
             }
         
-            // temporary instance to call  runStats
+            // Check if class exists and is valid
             Class<?> entityClass = Class.forName(entityType);
 
             if (!Entity.class.isAssignableFrom(entityClass)) {
@@ -131,8 +131,31 @@ public class Main {
                 return;
             }
 
-            Entity tempEntity = (Entity) entityClass.getDeclaredConstructor().newInstance();
-            tempEntity.runStats(entityType);
+            // Call static runStats and then handle type-specific output
+            if ("PowerCell".equals(entityType)) {
+                Entity.runStats(entityType);
+                System.out.print(" entities as follows -- *:");
+                Entity.runStats(entityType);
+                System.out.println();
+            } else if ("MaintenanceBot".equals(entityType)) {
+                java.util.List<Entity> bots = Entity.getInstances(entityType);
+                MaintenanceBot.runStats(bots);
+            } else if ("Commander".equals(entityType)) {
+                java.util.List<Entity> commanders = Entity.getInstances(entityType);
+                System.out.println(commanders.size() + " total " + entityType + "s    Status: Hunting to maintain ecosystem balance");
+            } else if ("Engineer".equals(entityType)) {
+                java.util.List<Entity> engineers = Entity.getInstances(entityType);
+                int totalEnergy = 0;
+                for (Entity entity : engineers) {
+                    totalEnergy += entity.getEnergy();
+                }
+                int averageEnergy = engineers.isEmpty() ? 0 : (totalEnergy / engineers.size());
+                System.out.println(engineers.size() + " total " + entityType + "s    Average energy: " + averageEnergy + "    Status: Peacefully farming station resources");
+            } else {
+                // Default: just print count
+                Entity.runStats(entityType);
+                System.out.println();
+            }
         
         } catch (InvalidEntityException e) {
             printProcessingError(command);

@@ -35,16 +35,6 @@ public class PowerCell extends Entity {
     @Override
     public boolean fight(String opp) {
         return false;
-    } 
-
-    @Override 
-    public void runStats(String className) throws InvalidEntityException { 
-
-        super.runStats(className); 
-        System.out.print(" entities as follows -- *:"); 
-        super.runStats(className); 
-        System.out.println();
-
     }
 
 }

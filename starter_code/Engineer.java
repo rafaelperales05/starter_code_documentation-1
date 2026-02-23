@@ -1,5 +1,3 @@
-import java.util.List;
-
 /**
  * Engineer — a custom entity type (your design).
  * 
@@ -101,18 +99,6 @@ public class Engineer extends Entity {
             }
         }
         return false;
-    }
-
-    @Override
-    public void runStats(String className) throws InvalidEntityException {
-        List<Entity> engineers = getInstances(className);
-        int totalEnergy = 0;
-        int lowEnergyCount = 0;
-        for (Entity entity : engineers) {
-            totalEnergy += entity.getEnergy();
-        }
-        int averageEnergy = engineers.isEmpty() ? 0 : (totalEnergy / engineers.size());
-        System.out.println(engineers.size() + " total " + className + "s    Average energy: " + averageEnergy + "    Status: Peacefully farming station resources");
     }
 
 }

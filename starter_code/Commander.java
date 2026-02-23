@@ -1,5 +1,3 @@
-import java.util.List;
-
 /**
  * Commander — a custom entity type (your design).
  * 
@@ -61,12 +59,6 @@ public class Commander extends Entity {
         
         // Peaceful toward other entities
         return false;
-    }
-
-    @Override
-    public void runStats(String className) throws InvalidEntityException {
-        List<Entity> commanders = getInstances(className);
-        System.out.println(commanders.size() + " total " + className + "s    Status: Hunting to maintain ecosystem balance");
     }
 
 }
