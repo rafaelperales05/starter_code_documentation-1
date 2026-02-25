@@ -1,48 +1,42 @@
 # Lab 3 Design Document: Space Station Simulation
 
-**Name:** Rafael Perales 
-**EID:**  Rp37497
-**Date:** 2/23/2026
+**Name:** Rafael Perales
+**EID:** Rp37497
+**Date:** 2/25/2026 
 
 ---
 
 ## 1. System Overview
 
-This simulation models a space station ecosystem where different entity types interact to create a balanced food chain. The world is a grid where entities move, consume energy, fight, and reproduce. The design goal was to create a self-sustaining ecosystem. 
+The simulation is designed to model a space system with 4 different Entity types : PowerCells, Commanders, Engineers, and MaintenaceBots. 
+Commanders are the "leaders" and keep the population in control. MaintenanceBots keep the system working, and Engineers provide support to the bots. Finally, PowerCells are the source of food for the other Entities. 
 
-The simulation successfully achieves stable equilibrium. Each entity has specific movement patterns, energy requirements, and interaction rules that create dependencies. Engineers act as peaceful farmers who occasionally compete with each other and transfer energy to MaintenanceBots. This is supposed to represent Engineers "fixing" the MaintenanceBots. Commanders hunt both Engineers and MaintenanceBots (with preference for Engineers) to regulate their populations. MaintenanceBots use genetic algorithms to evolve better movement patterns over time, making them more efficient energy collectors.
+The Ecosystem achieves balance (1000 + steps) with the parameters: 
+seed 1
+make PowerCell 200
+make Engineer 15
+make MaintenanceBot 15
+make Commander 10 
+This aligns with the roles, since engineers support MaintenanceBots while Commanders keep both under population control. 
 
-The ecosystem maintains stability when the predator-prey ratios are balanced correctly. Too many Commanders leads to ecosystem collapse as they consume all the producers. Too few Commanders allows MaintenanceBots to overpopulate and deplete PowerCells. The simulation demonstrates emergent behavior where entity populations oscillate but remain within sustainable bounds, mimicking real-world predator-prey dynamics.
 
 ---
 
 ## 2. Class Descriptions
 
-For each class you implemented, provide:
-- A brief description of the class's purpose and responsibilities
-- Key design decisions you made and why
-- How it interacts with other classes in the system
 
 ### 2.1 Commander
 
-Commanders are used as a population control class. They move in straight lines for 4 steps before randomly changing direction, creating an efficient hunting pattern. Commanders always fight PowerCells (for base energy), always fight Engineers (primary prey), and rarely hunt MaintenanceBots (only 1/30 times to keep bot populations viable). This selective hunting behavior prevents any one species from dominating.
-
-Commanders reproduce when their energy reaches 150. Their reproduction threshold is carefully balanced—high enough that they can't reproduce from PowerCells alone. This ensures Commanders only thrive when there's sufficient prey, creating natural population oscillation.
-
+Commanders serve as the top predators of the space station. They patrol aggressively, moving 6 steps forward before randomly selecting a new direction. Commanders fight all entities they encounter, functioning as population regulators to prevent any species from dominating. They reproduce when their energy reaches 150. This aggressive behavior is essential for maintaining population control over both Engineers and MaintenanceBots.
 
 ### 2.2 Engineer
 
-Engineers are peaceful farmers that provide stable energy flow to MaintenanceBots while acting as prey for Commanders. They move in an efficient row-based pattern (traveling East across a row, then South one step, then West across the next row) like systematically tending crop fields. This movement pattern maximizes their PowerCell collection efficiency. Engineers always harvest PowerCells and compete with other Engineers (1/5 chance) or Commanders (1/5 chance) for population control, but are peaceful toward MaintenanceBots.
-
-The key innovation is the energy transfer mechanic: when an Engineer with 150+ energy encounters a MaintenanceBot, they transfer 30 energy instead of fighting. This creates a symbiotic farming relationship—Engineers efficiently collect PowerCells and "feed" MaintenanceBots, helping support bot populations without direct competition. Engineers reproduce at 150 energy, making them productive farmers that can sustain both their own population and support bots.
-
-Engineers are essential because they provide a stable, predictable prey base for Commanders while simultaneously supporting MaintenanceBot populations through energy transfer. 
-
+Engineers support and sustain the MaintenanceBot population. When an Engineer encounters a MaintenanceBot and has at least 115 energy, it donates energy to the bot and attempts to escape. If escape fails, the Engineer allows itself to be defeated peacefully. Engineers reproduce at 150 energy, allowing them to maintain a stable population. Their presence is imporant to the ecosystem balance because without Engineers providing energy support to MaintenanceBots, Commander populations grow unchecked and eventually dominate the station. 
 
 
 ### 2.3 Other Classes (if modified or relevant)
 
-_If you made significant design decisions in your implementation of Main, or if you added any helper classes, describe them here._
+N/A - kept logic consistent. 
 
 ---
 
@@ -72,49 +66,47 @@ _You may draw these by hand and scan them, use a tool like draw.io or Lucidchart
 
 _Fill in the table below describing what ecological role each entity type plays in your simulation._
 
-| Entity | Role | Energy Strategy | Reproduction Threshold |ever reproduces | Never fights (always consumed) |
-| MaintenanceBot | Primary consumer / Evolver | Harvest PowerCells, receive Engineer transfers | 150 energy | Always fights (aggressive) |
-| Commander | Apex predator / Population control | Hunt Engineers & MaintenanceBots | 150 energy | Selective hunter (always vs E/*, 1/30 vs M) |
-| Engineer | Farmer / Symbiotic supporter | Efficiently harvest PowerCells, transfer to bots | 150 energy | Peaceful (1/5 vs E/C, never vs M) Fight |
-| Commander | Keep Population Stable |  | | Always Fight |
-| Engineer | | | | Never Fight |
+| Entity | Role | Energy Strategy | Reproduction Threshold | Fight Behavior |
+|--------|------|-----------------|----------------------|----------------|
+| PowerCell | Energy producer | Solar charging (+1/step) | N/A | Never fights |
+| MaintenanceBot | Autonomous worker | Algorithm movement, gains energy from combat | 150 | Always fights all entities |
+| Commander | Apex predator / Population control | Aggressive patrol (walk + run), gains energy from combat | 150 | Always fights |
+| Engineer | Support | Systematic row pattern with rest cycles, transfers energy to MaintenanceBots | 150 | Fights PowerCells and other Engineers |
 
-The balancing process involved extensive experimentation with initial population ratios and behavioral parameters. I started with roughly equal counts of each entity type (10-15 of each), which immediately led to collapse—either Commanders overhunted and starved, or MaintenanceBots exploded in population.
+### 4.2 Balance and Tuning
 
-The first issue was Commander aggression. Initial designs had Commanders hunting MaintenanceBots at the same rate as Engineers (always or 50%), which decimated the bot population since bots always fight back (risky for Commanders). I adjusted this to 1/30 MaintenanceBot hunting, giving bots breathing room while still preventing overpopulation. The second key adjustment was the Engineer-MaintenanceBot energy transfer, creating a stable food web where Engineers "farm" PowerCells and share energy with bots.
+_Describe the process you went through to balance your ecosystem. Answer questions like:_
 
-Movement patterns were also critical. Engineers initially moved randomly, making them inefficient farmers. The row-based systematic pattern dramatically improved their energy collection, letting them sustain both reproduction and energy transfer. Commander movement (straight lines with periodic turns) provides efficient hunting coverage without being too aggressive.
-
-For stable 500+ step runs, a good starting configuration is: 10-12 Engineers, 8-10 MaintenanceBots, 3-4 Commanders, and let PowerCells spawn naturally. The key ratio is approximately 3:2:1 (Engineers:Bots:Commanders). Seeds in the 1000-5000 range tend to produce good initial distributions that avoid early clustering deaths.pe dominated, etc.)_
+- _What initial entity counts did you start with?_
+- _What happened in your first attempts? (e.g., all entities died, one type dominated, etc.)_
 - _What parameters or behaviors did you adjust to fix it?_
-- _What seed value and entity counts produce a stable run of 500+ steps?_
+- _What seed value and entity counts produce a stable run of 500+ steps?_ 
+
+I orginally started with 100 Powercells, 10 commanders, 10 engineers, and 10 maintenances. However, I found that commanders were dominating the population and would cause the other Entities to go extinct. In order to tune this, I decreased the reproduction energy of the Commanders. At first, I believed that giving them a high reproduction limit would slow their growth, but it would cause them to dominate. Whenever, I gave the same reproduction minimum to all entities, it was much more stable.  
+I used these paramters to achive a stable run of 1500 steps. 
+seed 1
+make PowerCell 200
+make Engineer 15
+make MaintenanceBot 15
+make Commander 10 
+
 
 ### 4.3 Failure Modes
 
 _Describe at least two failure modes you observed during development — situations where the ecosystem collapsed. For each, explain what caused the collapse and what you changed to prevent it._
- Commander Starvation Cascade** - When Commanders hunted MaintenanceBots too aggressively (50% fight rate), they would deplete both bot and Engineer populations simultaneously. Since both prey types fight back, Commanders would take heavy damage in fights. Once prey populations dropped below critical mass, Commanders couldn't find enough food and would die off from rest energy costs. This left Engineers to multiply unchecked until PowerCells couldn't sustain them, causing total collapse. **Fix:** Reduced MaintenanceBot hunting to 1/30 chance and made Engineers never fight Commanders directly. This ensures Commanders always have a "safe" prey option (Engineers) while still providing population pressure on bots.
 
-2. **Failure mode 2: MaintenanceBot Explosion** - MaintenanceBots reproduce at 150 energy and always fight (aggressive), making them very successful in early game. Without sufficient predation pressure, they would multiply rapidly, consuming all PowerCells faster than respawn rates. Eventually the bot population would peak around 60-80 entities, then crash simultaneously as PowerCells became scarce. The genetic algorithm couldn't save them since no genes help when there's zero food. **Fix:** Increased Commander population in starting configurations and added the Engineer-bot energy transfer. This creates a negative feedback loop—when bots become numerous, they encounter more Commanders (who hunt them 1/30 times) and more Engineers (who help sustain them), stabilizing the population through both predation and symbiosis.
-2. **Failure mode 2:** _description_
+1. **Failure mode 1:** Engineers being fully peaceful entities. At first, my intention was to make engineers provide support to both Commanders and MaintennceBots. However, in order to donate energy, they also are given the chance to avoid the fight. Therefore, they had no natural predators and would dominate the population. Allowing them to fight eachother, helped keep the population more stable. 
+2. **Failure mode 2:** Commanders are supposed to be "leaders" and provide population control to other entities. Therefore, at first I attempted to make them stronger than other entites and put a high minimum reproduction. However, this did not work out and they would usually cause other entites to be wiped out. To fix this, I made them reproduce at the same energy as other entities . 
 
 ---
 
-Beyond the 5 provided tests, I extensively tested edge cases and ecosystem dynamics. I ran long simulations (1000+ timesteps) with various starting configurations to verify stability, watching for population oscillations versus complete collapse. I tested null and invalid inputs for all Main commands to ensure proper error handling (lowercase class names, negative numbers, nonexistent classes).
-
-For ecosystem testing, I used the stats command frequently to monitor population ratios. I ran simulations with only two entity types (e.g., just Engineers and PowerCells) to verify each entity's independent behavior before testing interactions. I tested the genetic algorithm by running extended MaintenanceBot-only simulations and verifying gene percentages evolved over time (checked with runStats MaintenanceBot).
-
-Edge cases tested include: (1) Empty world scenarios where all entities die—verified graceful degradation; (2) Single-entity encounters to verify fight logic worked correctly for each pairing (M vs E, C vs E, E vs M with energy transfer); (3) Massive initial populations (50+ entities) to test performance and verify no crashes; (4) Seed values that create clustering (entities spawning in same locations) to test encounter resolution; (5) Zero energy scenarios to verify entities die correctly. The junit tests provided verification for core functionality like makeEntity validation, reproduce energy splitting, and getInstances filtering.
-
-The hardest part was balancing the ecosystem to prevent boom-bust cycles. Creating entities that interact in interesting ways is easy, but achieving stable equilibrium required dozens of test runs and careful parameter tuning. I initially underestimated how sensitive the system is to small changes—adjusting Commander hunting rates from 1/10 to 1/30 made the difference between collapse and stability.
-
-The second major challenge was working within autograder constraints. The requirement that Entity not have any new non-abstract methods forced creative solutions like embedding MaintenanceBot gene mutation logic directly in Entity.reproduce() and moving Engineer energy transfer into Entity.solveEncounters(). This taught me to work with inheritance constraints rather than fighting them—sometimes the "clean" design (separate helper methods) isn't possible, and you need to consolidate logic creatively.
-
-If I started over, I'd begin with ecosystem design before implementation. I jumped into coding entity behaviors without fully thinking through the food web structure, leading to multiple rewrites. I'd sketch out the energy flow diagram first: PowerCells → Bots/Engineers → Commanders, with Engineers also supporting Bots. Starting with this high-level design would have saved time.
-
-The key OOP lesson was the power of polymorphism and abstract methods. Having each entity implement doTimeStep() and fight() differently lets the simulation loop treat all entities uniformly (Entity.worldTimeStep() just calls doTimeStep() on each) while producing complex emergent behavior. The abstract fight() method was particularly elegant—entities don't know what they're encountering until runtime, and their decision (true/false) combines with their opponent's decision to determine outcomes. This demonstrates how simple abstractions can model sophisticated real-world interactions.? If you wrote any additional test input files, describe what they test._
-
+## 5. Testing
+For every function in Entities, I created a corresponding Junit file testing basic behavior as well as edge cases. 
+This included empty, null, or wrong inputs.  
 ---
 
 ## 6. Challenges and Lessons Learned
 
-_What was the hardest part of this lab? What would you do differently if you started over? What did you learn about object-oriented design from this experience?_
+The hardest part of this lab was understanding where to start. Looking at the Entity class initially was overwhelming, and there were so many methods,  relationships, and behaviors to understand. Furthermore, I understand and can explain the pillars of OOP, however I had not yet practiced implementing them in any code. It was confusing at first to come up with abstract classes, or functions like runStats that were going to be overriden by its subclasses.  
+
+I now have a much better understanding of the benefits of OOP. Furthermore, if I had to do this lab again, I would write down all the classes and try to understand how they work togther before attempting to start coding.
