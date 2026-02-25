@@ -1,40 +1,32 @@
-/**
- * Commander — a custom entity type (your design).
- * 
+/** 
  * Commanders are apex predators who hunt other entities to maintain
- * the station's population balance. They don't compete for PowerCells,
- * instead gaining energy by hunting MaintenanceBots and Engineers.
- * This creates a natural food chain:
- * PowerCells → Bots/Engineers → Commanders
+ * the station's population balance. 
  * 
  * Display character: C
  */
 public class Commander extends Entity {
 
-    private static final int REPRODUCTION_ENERGY_MIN = 250;
-    private static final int BOT_HUNT_CHANCE = 5; 
-    private static final int ENGINEER_FIGHT_CHANCE = 2;
-
+    private static final int REPRODUCTION_ENERGY_MIN = 150;
     private int direction = Entity.getRandomInt(8);
-    private int stepsUntilTurn = 4;
+    private int stepsUntilTurn = 6; 
 
     /**
-     * Commanders walk in straight lines, changing direction every 4 steps.
-     * They reproduce when energy reaches 150.
+     * Commanders move randomly and reproduce at high energy threshold.
      */
-    @Override
-    public void doTimeStep() {
+    @Override 
+    public void doTimeStep() { 
         walk(direction);
         stepsUntilTurn--;
         if (stepsUntilTurn <= 0) {
             direction = Entity.getRandomInt(8);
+            run(direction); 
             stepsUntilTurn = 4;
         }
         if (this.getEnergy() >= REPRODUCTION_ENERGY_MIN) {
             reproduce(this, Entity.getRandomInt(8));
         }
     }
-
+ 
     /**
      * Display character is 'C' for Commander.
      */
@@ -44,26 +36,14 @@ public class Commander extends Entity {
     }
 
     /**
-     * Commanders are hunters with simple behavior:
-     * - Harvest PowerCells (base food source)
-     * - Hunt Engineers (primary prey)
-     * - Rarely hunt MaintenanceBots (1/10 times)
+     * Commanders are apex predators:
+     * - Only hunt MaintenanceBots (must work for food)
+     * - Cannot consume PowerCells (pure carnivores)
+     * - Don't fight Engineers or other Commanders
      */
     @Override
     public boolean fight(String opp) {
-
-        if ("*".equals(opp)) {
-            return true;
-        } 
-        if ("E".equals(opp) ) {
-           return Entity.getRandomInt(ENGINEER_FIGHT_CHANCE) == 0;
-        }
-        // Rarely hunt MaintenanceBots to keep their population viable
-        if ("M".equals(opp) || "C".equals(opp)) {
-            return Entity.getRandomInt(BOT_HUNT_CHANCE) == 0;
-        }
-        
-        return false;
+        return "M".equals(opp) || "*".equals(opp) || "E".equals(opp) || "C".equals(opp);
     }
 
     /**

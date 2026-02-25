@@ -1,6 +1,4 @@
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.lang.reflect.Method;
 
 public abstract class Entity {
@@ -25,8 +23,6 @@ public abstract class Entity {
      * ======================================================================== */
 
     private static java.util.Random rand = new java.util.Random();
-    
-
     public static int getRandomInt(int max) {
         return rand.nextInt(max);
     }
@@ -131,7 +127,7 @@ public abstract class Entity {
 
     /**  
      * Reproduce takes in a parent entity and creates a baby/offspring entity 
-     * it divides its energy with the baby and it is placed adjacent to the parent depending 
+     * Divides the energy with the baby and places the baby adjacent to the parent depending 
      * on input direction.
      * @param Parent - Parent entity that creates the offspring
      * @param Direction - The direciton indicates in which block the child will move to be adjacent
@@ -167,7 +163,6 @@ public abstract class Entity {
             MaintenanceBot parentBot = (MaintenanceBot) parent;
             MaintenanceBot childBot = (MaintenanceBot) child;
             
-            // Copy parent genes to child
             int[] parentGenes = parentBot.getGenes();
             int[] childGenes = childBot.getGenes();
             for (int i = 0; i < parentGenes.length; i++) {
@@ -175,25 +170,23 @@ public abstract class Entity {
             }
             
             // Find non-zero genes to decrement
-            java.util.ArrayList<Integer> candidates = new java.util.ArrayList<>();
+            List<Integer> nonZeroGenes = new ArrayList<>();
             for (int i = 0; i < childGenes.length; i++) {
                 if (childGenes[i] > 0) {
-                    candidates.add(i);
+                    nonZeroGenes.add(i);
                 }
             }
             
-            if (!candidates.isEmpty()) {
-                // Pick a gene to lose
-                int loseIdx = candidates.get(getRandomInt(candidates.size()));
-                childGenes[loseIdx]--;
+            if (!nonZeroGenes.isEmpty()) {
+
+                int loseIndex = nonZeroGenes.get(getRandomInt(nonZeroGenes.size()));
+                childGenes[loseIndex]--;
                 
-                // Pick a gene to gain
-                int gainIdx = getRandomInt(childGenes.length);
-                childGenes[gainIdx]++;
+                int gainIndex = getRandomInt(childGenes.length);
+                childGenes[gainIndex]++;
             }
         }
             
-        // add to babies  
         babies.add(child);
 
             
@@ -210,32 +203,24 @@ public abstract class Entity {
      * must be implemented by each subclass.
      * ======================================================================== */
 
-    /**
-     * Performs this entity's action for the current timestep.
-     * Each entity type decides what to do here (move, reproduce, etc.).
-     */
-    protected  abstract void doTimeStep();  
+
     
     /**
-     * Returns the display character for this entity type.
+     * Entity specfic time step
+     */
+    protected  abstract void doTimeStep();   
+
+    /**
+     * Returns display character
      */
     @Override
     public  abstract String toString(); 
+     
 
     /**
-     * Determines if this entity will fight when encountering another entity.
-     * 
-     * @param Opp - The display character (toString()) of the opponent entity
-     * @return true if this entity wants to fight, false if it wants to flee
-     * 
-     * This method can implement various fighting strategies:
-     * - Always fight: return true
-     * - Never fight (peaceful): return false
-     * - Conditional: return based on entity type, energy level, etc.
-     * - Probabilistic: return true with some random chance (e.g., 1 in 5)
-     * 
-     * If both entities return false, they will attempt to escape.
-     * If one or both return true, combat is resolved with random energy rolls.
+     * return true or false depending on fight behavior
+     * @param Opp - Opponent entity
+     * @return - true or false depending on fight behavior
      */
     protected  abstract boolean fight(String Opp); 
 
@@ -346,24 +331,9 @@ public abstract class Entity {
      * with more detailed information.
      * ======================================================================== */
 
-    /** 
-     * runStats prints a summary of the given entity list, this defualt version 
-     * counts how many of each display character exist. 
-     * @param className - string variable of instances requested
-     * 
-     */
     /**
-     * Default stats method expected by many autograders.
-     */
-    public static void runStats(List<Entity> entities) {
-        int count = (entities == null) ? 0 : entities.size();
-        System.out.print(count);
-    }
-
-    /**
-     * Stats entry point by class name used by the CLI.
-     * If the entity class provides a static runStats(List<Entity>) method,
-     * this dispatches to it; otherwise it falls back to Entity.runStats(List).
+     * Prints a summary of the given entity type. Subclasses can provide
+     * their own runStats method with more detailed information.
      */
     public static void runStats(String className) throws InvalidEntityException { 
         if (className == null || className.isEmpty() || Character.isLowerCase(className.charAt(0))) {
@@ -379,7 +349,8 @@ public abstract class Entity {
             Method stats = genClass.getMethod("runStats", List.class);
             stats.invoke(null, instances);
         } catch (NoSuchMethodException e) {
-            Entity.runStats(instances);
+            // Default implementation: just print the count
+            System.out.print(instances.size());
         } catch (InvalidEntityException e) {
             throw e;
         } catch (Exception e) {
@@ -462,9 +433,6 @@ public abstract class Entity {
      * World management
      * ======================================================================== */
 
-    /**
-     * Clears all entities from the world and resets the simulation.
-     */
     public static void clearWorld() {
         population.clear();
         babies.clear();
@@ -486,12 +454,6 @@ public abstract class Entity {
      *   5. Reset movement tracking for the next step
      *   6. Spawn new PowerCells (Params.refresh_powercell_count per step)
      */
-
-    // Implement worldTimeStep and any helper methods it needs  
-    /** 
-     * Advances the simulation by one time step. 
-     */
-
     public static void worldTimeStep() { 
         try {
             // 1. Each existing entity performs its action for this step
@@ -513,7 +475,6 @@ public abstract class Entity {
             // 6. Spawn powercells 
             spawnPowerCells(); 
             
- 
         }
          catch (Exception e) {
         }
@@ -528,11 +489,7 @@ public abstract class Entity {
      * 3. If neither wants to fight, attempt escape (one or both flee)
      * 4. If one or both want to fight, conduct combat (random roll based on energy)
      * 
-     * This supports various entity behaviors:
-     * - Always-fighting (e.g., aggressive Commanders)
-     * - Never-fighting (peaceful entities)
-     * - Conditional fighting (e.g., Engineers with 20% fight chance for population control)
-     * - Cooperative entities (e.g., Engineers transferring energy to MaintenanceBots)
+     *      
      */
     private static void solveEncounters(){
         if (world == null || world.isEmpty()) {
@@ -568,37 +525,49 @@ public abstract class Entity {
                     continue;
                 }
 
-                // Engineer energy transfer to MaintenanceBot
-                boolean handledWithoutFight = false;
-                if (first instanceof Engineer && second instanceof MaintenanceBot) {
-                    if (first.getEnergy() >= 150) {
-                        int transferAmount = 30;
-                        first.setEnergy(first.getEnergy() - transferAmount);
-                        second.setEnergy(second.getEnergy() + transferAmount);
-                        handledWithoutFight = true;
-                    }
-                } else if (second instanceof Engineer && first instanceof MaintenanceBot) {
-                    if (second.getEnergy() >= 150) {
-                        int transferAmount = 30;
-                        second.setEnergy(second.getEnergy() - transferAmount);
-                        first.setEnergy(first.getEnergy() + transferAmount);
-                        handledWithoutFight = true;
-                    }
-                }
 
-                if (first.getEnergy() <= 0) {
+                // PowerCells automatically give energy to opponent
+                if (first instanceof PowerCell) {
+                    second.setEnergy(second.getEnergy() + (first.getEnergy() / 2));
+                    first.setEnergy(0);
                     removeFromWorld(first);
                     population.remove(first);
                     continue;
                 }
-                if (second.getEnergy() <= 0) {
+                if (second instanceof PowerCell) {
+                    first.setEnergy(first.getEnergy() + (second.getEnergy() / 2));
+                    second.setEnergy(0);
                     removeFromWorld(second);
                     population.remove(second);
                     continue;
                 }
 
-                if (first.x_coord != second.x_coord || first.y_coord != second.y_coord) {
-                    continue;
+                // Engineer energy transfer to MaintenanceBot
+                boolean handledWithoutFight = false;
+                if (first instanceof Engineer && second instanceof MaintenanceBot) {
+                    if (first.getEnergy() >= 115) {
+                        int transferAmount = 10;
+                        first.setEnergy(first.getEnergy() - transferAmount);
+                        second.setEnergy(second.getEnergy() + transferAmount);
+                        // Engineer walks away after giving energy
+                        removeFromWorld(first);
+                        move(first, getRandomInt(8), 1);
+                        first.energy -= Params.walk_energy_cost;
+                        addToWorld(first);
+                        handledWithoutFight = true;
+                    }
+                } else if (second instanceof Engineer && first instanceof MaintenanceBot) {
+                    if (second.getEnergy() >= 115) {
+                        int transferAmount = 10;
+                        second.setEnergy(second.getEnergy() - transferAmount);
+                        first.setEnergy(first.getEnergy() + transferAmount);
+                        // Engineer walks away after giving energy
+                        removeFromWorld(second);
+                        move(second, getRandomInt(8), 1);
+                        second.energy -= Params.walk_energy_cost;
+                        addToWorld(second);
+                        handledWithoutFight = true;
+                    }
                 }
 
                 if (handledWithoutFight) {
@@ -614,6 +583,7 @@ public abstract class Entity {
                 fighters[0] = null;
                 fighters[1] = null;
 
+                // check again in case entity dies from running
                 if (first.getEnergy() <= 0) {
                     removeFromWorld(first);
                     population.remove(first);
@@ -634,18 +604,15 @@ public abstract class Entity {
                     if (!moved) {
                         moved = attemptEncounterEscape(first);
                     }
-                    if (!moved) {
-                        break;
+                    if (moved) {
+                        continue;
                     }
-                    continue;
                 }
 
-                int firstRoll = firstWillFight ? getRandomInt(first.getEnergy()) : 0;
-                int secondRoll = secondWillFight ? getRandomInt(second.getEnergy()) : 0;
-
+                // The one with more energy wins
                 Entity winner;
                 Entity loser;
-                if (firstRoll >= secondRoll) {
+                if (first.getEnergy() >= second.getEnergy()) {
                     winner = first;
                     loser = second;
                 } else {
@@ -663,14 +630,12 @@ public abstract class Entity {
 
     /**
      * Attempts to make an entity escape from an encounter by moving to
-     * an adjacent occupied cell in a random direction.
+     * an adjacent occupied cell in a random direction. Used for entities that
+     * are sometimes peaceful. 
      * 
-     * Returns true if the entity successfully moved to a different location.
-     * Returns false if no valid escape location exists (all adjacent cells empty).
+     * @param boolean- true if the entity successfully moved to a different location.
+     * false if no valid escape location exists (all adjacent cells empty).
      * 
-     * Note: This provides immediate one-time escape during encounter resolution.
-     * Entities can implement their own persistent flee behavior (like Engineers'
-     * multi-step fleeing) which activates in subsequent timesteps.
      */
     private static boolean attemptEncounterEscape(Entity entity) {
         if (entity == null || entity.getEnergy() <= 0) {
@@ -689,8 +654,9 @@ public abstract class Entity {
         return entity.x_coord != originalX || entity.y_coord != originalY;
     }
 
+
     /**
-     * Calls doTimeStep() on all existing entities.
+     * Call do timestep for all Entities in the world.
      */
     private static void runTimesteps(){ 
         try {  
@@ -703,10 +669,10 @@ public abstract class Entity {
         catch (Exception e) {  
             e.printStackTrace();
         }
-    }
-    
+    } 
+
     /**
-     * Deducts rest energy cost and removes dead entities (energy <= 0).
+     * Remove all entities that are dead. 
      */
     private static void removeDeadEntities() { 
         if (population == null || population.isEmpty()) {
@@ -730,7 +696,7 @@ public abstract class Entity {
     }
 
     /**
-     * Adds all offspring born this timestep to the world.
+     * Add all current offspring in the babies buffer to the world. 
      */
     private static void addOffspring(){  
         if (babies == null || babies.isEmpty()) {
@@ -748,8 +714,11 @@ public abstract class Entity {
             addToWorld(entity);
         }
         babies.clear();
-    } 
+    }  
 
+    /** 
+     *  Reset movement for all entities in the world. 
+     * */ 
     private static void resetMovement(){ 
         try {  
             for (List<Boolean> walked : hasWalked){ 
@@ -761,7 +730,11 @@ public abstract class Entity {
         catch (Exception e) { 
             e.printStackTrace();
         }
-    } 
+    }  
+
+    /**
+     * Spawn powercells based on parameters given. 
+     */
     private static void spawnPowerCells(){    
         try { 
             for (int i = 0; i < Params.refresh_powercell_count; i++){ 

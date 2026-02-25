@@ -110,12 +110,10 @@ public class Main {
         /* Write your code above */
         System.out.flush();
     }   
-
     /**
-     * Handles the "stats Type" command to display statistics for a given entity type.
-     * Validates the entity type and dispatches to the appropriate stats method.
-     * 
-     * @param command The command array where command[0] is "stats" and command[1] is the entity type name
+     * runTypeStats takes the user Entity input and calls the respective 
+     * Entity Typestats function. 
+     * @param command - user input indicating entity type 
      */
     private static void runTypeStats(String[] command) { 
          try {
@@ -154,7 +152,6 @@ public class Main {
                 java.util.List<Entity> engineers = Entity.getInstances(entityType);
                 Engineer.runStats(engineers);
             } else {
-                // Default: just print count
                 Entity.runStats(entityType);
                 System.out.println();
             }
@@ -168,10 +165,8 @@ public class Main {
     } 
 
     /**
-     * Handles the "seed number" command to set the random number generator seed.
-     * Validates that the seed is a valid long integer (positive or negative).
-     * 
-     * @param command The command array where command[0] is "seed" and command[1] is the seed value
+     * Validates and sets seed to be able to reproduce results. 
+     * @param command - user input indicating seed value
      */
     private static void setSeed(String[] command) {
         try {
@@ -193,14 +188,10 @@ public class Main {
         }
  
     }
-    
+
     /**
-     * Handles the "make Type [count]" command to create one or more entities.
-     * If count is omitted, creates exactly one entity. Validates that the entity
-     * type exists and the count is a positive integer.
-     * 
-     * @param command The command array where command[0] is "make", command[1] is the entity type,
-     *                and command[2] is the optional count
+     * Creates n amount of the given entity type 
+     * @param command - contains "make", entity type, and optional count
      */
     private static void makeType(String[] command) {
         try {
@@ -234,10 +225,8 @@ public class Main {
     } 
 
     /**
-     * Handles the "step [count]" command to advance the simulation by one or more time steps.
-     * If count is omitted, advances by exactly one step. Validates that count is a positive integer.
-     * 
-     * @param command The command array where command[0] is "step" and command[1] is the optional count
+     * Advances simulation by n amount of steps. Checks for valid number and ensures it is a positive number.
+     * @param command - contains optional amount of steps to advance (defaults to 1)
      */
     private static void advanceTime(String[] command){ 
         try {
@@ -264,23 +253,13 @@ public class Main {
             printProcessingError(command);
         }
     }
-
+    
     /**
-     * Parses a string into a positive integer.
-     * Returns null if the string is not a valid positive integer.
-     * 
-     * @param value The string to parse
-     * @return The parsed positive integer, or null if invalid
+     * Parses user input and validates that it is a positive number
+     * @param value - user input
+     * @return - Integer of the user input if valid, null otherwise
      */
     private static Integer parsePositiveInt(String value) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-        for (char ch : value.toCharArray()) {
-            if (!Character.isDigit(ch)) {
-                return null;
-            }
-        }
         try {
             int parsed = Integer.parseInt(value);
             return parsed > 0 ? parsed : null;
@@ -290,28 +269,11 @@ public class Main {
     }
 
     /**
-     * Parses a string into a Long seed value (accepts positive or negative integers).
-     * Returns null if the string is not a valid long integer.
-     * 
-     * @param value The string to parse
-     * @return The parsed Long value, or null if invalid
+     * Parses user input and validates that it is a positive number
+     * @param value - user input
+     * @return - Integer of the user input if valid, null otherwise
      */
     private static Long parseLongSeed(String value) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-        String digits = value;
-        if (digits.startsWith("-")) {
-            digits = digits.substring(1);
-        }
-        if (digits.isEmpty()) {
-            return null;
-        }
-        for (char ch : digits.toCharArray()) {
-            if (!Character.isDigit(ch)) {
-                return null;
-            }
-        }
         try {
             return Long.parseLong(value);
         } catch (Exception e) {
@@ -319,12 +281,6 @@ public class Main {
         }
     }
 
-    /**
-     * Prints an error message indicating that the given command had processing errors.
-     * Outputs: "error processing: <command string>"
-     * 
-     * @param command The command array that failed to process
-     */
     private static void printProcessingError(String[] command) {
         System.out.println("error processing: " + errorToString(command));
     }

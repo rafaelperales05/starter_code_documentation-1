@@ -1,4 +1,4 @@
-import java.util.List;
+import java.util.*;
 
 /**
  * MaintenanceBot — an autonomous robot that evolves its movement over time.
@@ -35,10 +35,12 @@ public class MaintenanceBot extends Entity {
             genes[i] = GENE_TOTAL / GENE_AMOUNT;
         }
         dir = Entity.getRandomInt(GENE_AMOUNT);
-    }
+    } 
 
-    /**
-     * Moves forward based on gene distribution, reproduces at 150 energy.
+    /** 
+     * doTimestep reproduces a MaintenanceBot when energy is above 150, 
+     * randomly subtracts a gene, randonly adds a gene, and updates the direction 
+     * based on gene distribution.  
      */
     @Override
     public void doTimeStep() {
@@ -64,17 +66,15 @@ public class MaintenanceBot extends Entity {
         dir = (dir + offset) % 8;
     }
 
-    /**
-     * Returns the gene array for this bot. 
-     * @param genes - geners array
+    /** 
+     * @return genes - return a maintenanceBots genes 
      */
     public int[] getGenes() {
         return genes;
     }
 
     /**
-     * Display character is 'M' for MaintenanceBot. 
-     * @param display character is 'M' for MaintenanceBot
+     * Display character is 'M' for MaintenanceBot.
      */
     @Override
     public String toString() {
@@ -82,7 +82,7 @@ public class MaintenanceBot extends Entity {
     }
 
     /**
-     * MaintenanceBots always fight (aggressive behavior).
+     * Always returns true as maintenanceBots always fight.
      */
     @Override
     public boolean fight(String opp) {
@@ -90,9 +90,7 @@ public class MaintenanceBot extends Entity {
     }
 
     /**
-     * Autograder-style stats entry point.
-     *
-     * Prints:
+     * Prints the count, and also the gene distribution of all maintenaceBots. 
      *   <count> total MaintenanceBots    <p>% straight   <p>% back   <p>% right   <p>% left
      */
     public static void runStats(List<Entity> entities) {
@@ -132,9 +130,9 @@ public class MaintenanceBot extends Entity {
         double rightPercent = (geneSum[RIGHT] * 100.0) / totalSum;
         double leftPercent = (geneSum[LEFT] * 100.0) / totalSum;
 
-        System.out.printf("%d total MaintenanceBots    %.2f%% straight   ", count, straightPercent);
-        System.out.printf("%.2f%% back   ", backPercent);
-        System.out.printf("%.2f%% right   ", rightPercent);
-        System.out.printf("%.2f%% left   %n", leftPercent);
+        System.out.print(count + " total MaintenanceBots    " + straightPercent + "% straight   ");
+        System.out.print(backPercent + "% back   ");
+        System.out.print(rightPercent + "% right   ");
+        System.out.println(leftPercent + "% left   ");
     }
 }
