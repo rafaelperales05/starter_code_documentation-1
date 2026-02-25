@@ -116,7 +116,7 @@ public class MaintenanceBot extends Entity {
                 }
             }
         }
-
+        // avoid dive by 0
         if (totalSum == 0) {
             System.out.print(count + " total MaintenanceBots    0.0% straight   ");
             System.out.print("0.0% back   ");

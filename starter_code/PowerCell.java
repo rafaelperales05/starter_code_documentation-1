@@ -37,4 +37,13 @@ public class PowerCell extends Entity {
         return false;
     }
 
+    /**
+     * Print statistics for PowerCell entities. 
+     * Output format: <count> entities as follows -- *:<count>
+     */
+    public static void runStats(java.util.List<Entity> entities) {
+        int count = (entities == null) ? 0 : entities.size();
+        System.out.println(count + " entities as follows -- *:" + count);
+    }
+
 }

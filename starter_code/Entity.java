@@ -128,7 +128,8 @@ public abstract class Entity {
     /**  
      * Reproduce takes in a parent entity and creates a baby/offspring entity 
      * Divides the energy with the baby and places the baby adjacent to the parent depending 
-     * on input direction.
+     * on input direction. 
+     * It has special conditions for MaintenanceBots. It copies their gene distribution and rearranges them. 
      * @param Parent - Parent entity that creates the offspring
      * @param Direction - The direciton indicates in which block the child will move to be adjacent
      *  
@@ -331,6 +332,7 @@ public abstract class Entity {
      * with more detailed information.
      * ======================================================================== */
 
+
     /**
      * Prints a summary of the given entity type. Subclasses can provide
      * their own runStats method with more detailed information.
@@ -349,7 +351,6 @@ public abstract class Entity {
             Method stats = genClass.getMethod("runStats", List.class);
             stats.invoke(null, instances);
         } catch (NoSuchMethodException e) {
-            // Default implementation: just print the count
             System.out.print(instances.size());
         } catch (InvalidEntityException e) {
             throw e;
@@ -483,13 +484,11 @@ public abstract class Entity {
     /**
      * Resolves all encounters where multiple entities occupy the same location.
      * For each location with 2+ entities, the resolution order is:
+     * Check if either is a powercell and can be consumed. 
+     * Check if pair is engineer -> MaintenaceBot. Engineers donate energy at 115. 
+     * Fight, winner will be the Entity with greater energy and will collect 
+     * half the losers energy.
      * 
-     * 1. Check for special interactions (e.g., Engineer energy transfer to MaintenanceBot)
-     * 2. If not handled peacefully, ask each entity if they want to fight
-     * 3. If neither wants to fight, attempt escape (one or both flee)
-     * 4. If one or both want to fight, conduct combat (random roll based on energy)
-     * 
-     *      
      */
     private static void solveEncounters(){
         if (world == null || world.isEmpty()) {

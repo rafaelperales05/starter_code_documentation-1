@@ -11,7 +11,8 @@ public class Commander extends Entity {
     private int stepsUntilTurn = 6; 
 
     /**
-     * Commanders move randomly and reproduce at high energy threshold.
+     * Commanders walk and run randomly every 6 timesteps. They 
+     * reproduce whenever their energy is above 150.
      */
     @Override 
     public void doTimeStep() { 
@@ -36,14 +37,11 @@ public class Commander extends Entity {
     }
 
     /**
-     * Commanders are apex predators:
-     * - Only hunt MaintenanceBots (must work for food)
-     * - Cannot consume PowerCells (pure carnivores)
-     * - Don't fight Engineers or other Commanders
+     * Commanders always fight. 
      */
     @Override
     public boolean fight(String opp) {
-        return "M".equals(opp) || "*".equals(opp) || "E".equals(opp) || "C".equals(opp);
+        return true;
     }
 
     /**

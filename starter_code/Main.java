@@ -35,7 +35,7 @@ public class Main {
         /* Do not alter the code above for your submission. */
         /* Write your code below. */
 
-        String in = "";
+        String in = "";        
 
         while (!in.equals("quit")) {
             System.out.print("space_station> ");
@@ -138,10 +138,8 @@ public class Main {
 
             // Call static runStats and then handle type-specific output
             if ("PowerCell".equals(entityType)) {
-                Entity.runStats(entityType);
-                System.out.print(" entities as follows -- *:");
-                Entity.runStats(entityType);
-                System.out.println();
+                java.util.List<Entity> cells = Entity.getInstances(entityType);
+                PowerCell.runStats(cells);
             } else if ("MaintenanceBot".equals(entityType)) {
                 java.util.List<Entity> bots = Entity.getInstances(entityType);
                 MaintenanceBot.runStats(bots);
@@ -200,8 +198,9 @@ public class Main {
                 return;
             }
             
-            String entityType = command[1];
-            int count = 1; // default to 1 if not specified
+            String entityType = command[1]; 
+            // default 1 
+            int count = 1; 
             
             if (command.length == 3) {
                 Integer parsedCount = parsePositiveInt(command[2]);
@@ -235,7 +234,7 @@ public class Main {
                 return;
             }
             
-            int count = 1; // default to 1 if not specified
+            int count = 1; 
             
             if (command.length == 2) {
                 Integer parsedCount = parsePositiveInt(command[1]);

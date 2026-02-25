@@ -3,9 +3,7 @@ import java.util.*;
  * Engineers are efficient farmers who tend to the station's resources.
  * They move systematically in rows like tending organized crop fields.
  * They are completely peaceful toward all entities EXCEPT other Engineers 
- * Engineers also maintain MaintenanceBots by transferring energy to them when
- * they encounter each other, creating a symbiotic relationship where the efficient
- * farming behavior of Engineers helps support the bot population.
+ * Engineers also maintain MaintenanceBots by transferring energy to them.
  * 
  * Movement pattern: Travels East across a row, moves South, then travels
  * West across the next row, creating efficient coverage like plowing fields.
@@ -18,9 +16,9 @@ public class Engineer extends Entity {
     private static final int ROW_LENGTH = Math.max(8, Params.world_width / 3);
 
     // Smart farming movement: systematic row-based pattern
-    private int horizontalDirection = 0; // 0 = East, 4 = West
+    private int horizontalDirection = 0; 
     private int stepsInCurrentRow = 0;
-    private boolean restStep = false; // walk every other step to conserve energy
+    private boolean restStep = false; 
 
     /**
      * Engineers move in a systematic row pattern and reproduce at 150 energy.
@@ -29,7 +27,6 @@ public class Engineer extends Entity {
     public void doTimeStep() {
         performFarmingMovement();
 
-        // Reproduce more readily than fighting entities
         if (this.getEnergy() >= REPRODUCTION_ENERGY_MIN) {
             reproduce(this, Entity.getRandomInt(8));
         }
@@ -37,12 +34,12 @@ public class Engineer extends Entity {
 
     /**
      * Simplified farming movement pattern:
-     * Walks every other step to conserve energy (rest cost 1 vs move cost 3).
+     * Walks every other step to conserve energy.
      */
     private void performFarmingMovement() {
         restStep = !restStep;
         if (restStep) {
-            return; // rest this step, only pay rest_energy_cost
+            return; 
         }
 
         stepsInCurrentRow++;
@@ -50,7 +47,7 @@ public class Engineer extends Entity {
         if (stepsInCurrentRow < ROW_LENGTH) {
             walk(horizontalDirection);
         } else {
-            // End of row: move South to next row and switch direction
+            // End of row, move South to next row and switch direction
             walk(6); 
             stepsInCurrentRow = 0;
             horizontalDirection = (horizontalDirection == 0) ? 4 : 0;
@@ -66,9 +63,8 @@ public class Engineer extends Entity {
     }
 
     /**
-     * Engineers are efficient farmers with simple behavior:
-     * - Always harvest PowerCells
-     * - Never fight other entities (peaceful herbivores)
+     * Engineers eat powercells for energy and fight other engineers 
+     * for population control. 
      */
     @Override
     public boolean fight(String opp) {
